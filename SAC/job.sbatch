@@ -15,5 +15,7 @@ scontrol show job $SLURM_JOB_ID
 source $HOME/.bashrc
 
 # insert your commands here
-pipenv python3 trainSAC.py
+singularity exec --nv
+/common/singularityImages/TCML-Cuda11_0_TF2_4_1_PT1_7_1.simg python trainSAC.py
+%pipenv python3 trainSAC.py
 
