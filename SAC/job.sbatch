@@ -12,7 +12,6 @@
 # print info about current job
 scontrol show job $SLURM_JOB_ID
 
-source $HOME/.bashrc
 
 # insert your commands here
 singularity exec --nv
