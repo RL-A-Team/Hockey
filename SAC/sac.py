@@ -179,7 +179,7 @@ class SACAgent:
                                        self.critic_2.parameters()):
             target_param.data.copy_(target_param.data * (1.0 - self.tau) + param.data * self.tau)
 
-        return critic1_loss, critic2_loss, actor_loss
+        return critic1_loss.item(), critic2_loss.item(), actor_loss.item()
 
     def store_transition(self, transition):
         self.replay_buffer.add_transition(transition)
