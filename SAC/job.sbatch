@@ -15,8 +15,5 @@ scontrol show job $SLURM_JOB_ID
 source $HOME/.bashrc
 
 # insert your commands here
-#eval "$(micromamba shell hook --shell=bash)"
-#micromamba activate social-rl
-srun python3 trainSAC.py
-#micromamba deactivate
+pipenv python3 trainSAC.py
 
