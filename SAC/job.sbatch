@@ -12,9 +12,8 @@
 # print info about current job
 scontrol show job $SLURM_JOB_ID
 
-
 # insert your commands here
 singularity exec --nv
-/common/singularityImages/TCML-Cuda11_0_TF2_4_1_PT1_7_1.simg python trainSAC.py
+/common/singularityImages/TCML-CUDA12_0_TF2_12_PT1_13.simg python trainSAC.py
 %pipenv python3 trainSAC.py
 
