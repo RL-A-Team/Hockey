@@ -17,7 +17,7 @@ source $HOME/.bashrc
 
 # insert your commands here
 #eval "$(micromamba shell hook --shell=bash)"
-micromamba activate social-rl
+micromamba activate hockey-rl
 pip install git+https://github.com/martius-lab/laser-hockey-env.git
 srun python3 src/trainSAC.py 
 micromamba deactivate
