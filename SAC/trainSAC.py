@@ -4,7 +4,7 @@ from laserhockey import hockey_env as h_env
 from sac import SACAgent
 import time
 
-from utils import plot_actor_critic_losses, save_multi_image, plot_wins_loses, save_evaluation_results
+from utils import utils
 
 if __name__ == '__main__':
 
@@ -67,4 +67,4 @@ if __name__ == '__main__':
     env.close()
 
     print(f'Total reward {total_reward}')
-    save_evaluation_results(critic1_losses, critic2_losses, actor_losses, stats_win, stats_lose, agent, False)
+    utils.save_evaluation_results(critic1_losses, critic2_losses, actor_losses, stats_win, stats_lose, agent, False)
