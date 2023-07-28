@@ -1,9 +1,10 @@
 import numpy as np
 from laserhockey import hockey_env as h_env
-from matplotlib import pyplot as plt
 
 from sac import SACAgent
 import time
+
+from utils import plot_actor_critic_losses, save_multi_image, plot_wins_loses, save_evaluation_results
 
 if __name__ == '__main__':
 
@@ -21,15 +22,17 @@ if __name__ == '__main__':
     critic1_losses = []
     critic2_losses = []
     actor_losses = []
+    stats_win = []
+    stats_lose = []
 
-    while episode_counter <= 500: #5000:
+    while episode_counter <= 5: #5000:
         state, info = env.reset()
         obs_agent2 = env.obs_agent_two()
 
         opponent = h_env.BasicOpponent(weak=True)
 
 
-        for step in range(100): #250):
+        for step in range(10): #250):
             a1 = agent.select_action(state).detach().numpy()[0]
             a2 = opponent.act(obs_agent2)
 
@@ -54,15 +57,14 @@ if __name__ == '__main__':
         critic2_losses.append(critic2_loss)
         actor_losses.append(actor_loss)
 
+        stats_win.append(1 if env.winner == 1 else 0)
+        stats_lose.append(1 if env.winner == -1 else 0)
+
         episode_counter += 1
 
         print(f'Epsiode {episode_counter}: Winner {env.winner}')
 
-    #plt.plot(np.arange(len(critic1_losses)), critic1_losses, label='Critic 1')
-    #plt.plot(np.arange(len(critic2_losses)), critic2_losses, label='Critic 2')
-    #plt.plot(np.arange(len(actor_losses)), actor_losses, label='Actor')
-    #plt.legend()
-    #plt.show()
-
     env.close()
+
     print(f'Total reward {total_reward}')
+    save_evaluation_results(critic1_losses, critic2_losses, actor_losses, stats_win, stats_lose, agent, False)
