@@ -14,15 +14,13 @@ if __name__ == '__main__':
 
     render = True
 
-    agent = SACAgent(state_dim=env.observation_space.shape, action_dim=env.action_space, alpha=0)
+    agent = SACAgent(state_dim=env.observation_space.shape, action_dim=env.action_space)
     #agent = pickle.load(open('models/sac_model_20230728T180331.pkl', 'rb'))
 
     episode_counter = 1
     total_step_counter = 0
     grad_updates = 0
     new_op_grad = []
-
-    total_reward = 0
 
     critic1_losses = []
     critic2_losses = []
@@ -44,12 +42,9 @@ if __name__ == '__main__':
 
             ns, r, d, _, info = env.step(np.hstack([a1, a2]))
 
-            #reward = r + 10*info['reward_closeness_to_puck'] + 10*info['reward_puck_direction']
-            #print('Reward', reward, 10*info['reward_closeness_to_puck'], 10*info['reward_puck_direction'])
+            reward = r + 10*info['reward_closeness_to_puck'] + 10*info['reward_puck_direction']
 
-            total_reward += r
-
-            agent.store_transition((state, a1, r, ns, d))
+            agent.store_transition((state, a1, reward, ns, d))
 
             if render:
                 time.sleep(0.01)
@@ -77,6 +72,5 @@ if __name__ == '__main__':
 
     env.close()
 
-    print(f'Total reward {total_reward}')
     utils.save_evaluation_results(critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose,
                                   agent, False)
