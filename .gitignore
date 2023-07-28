@@ -1,3 +1,5 @@
+eval/
+models/
 .DS_Store
 .idea/
 .vagrant/
