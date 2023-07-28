@@ -1,4 +1,5 @@
 .DS_Store
 .idea/
+.vagrant/
 SAC/.DS_Store
 SAC/__pycache__/

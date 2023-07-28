@@ -1,10 +1,9 @@
 #!/bin/bash
-#SBATCH --ntasks=1                # Number of tasks (see below)
-#SBATCH --cpus-per-task=1         # Number of CPU cores per task
-#SBATCH --nodes=1                 # Ensure that all cores are on one machine
-#SBATCH --time=0-12:00            # Runtime in D-HH:MM
-#SBATCH --gres=gpu:1    # optionally type and number of gpus
-#SBATCH --mem=100G                # Memory pool for all cores (see also --mem-per-cpu)
+#SBATCH --job-name=HockeySAC
+#SBATCH --cpus-per-task=2         # Number of CPU cores per task
+#SBATCH --mem-per-cpu=1G
+#SBATCH --gres=gpu:1    	# optionally type and number of gpus
+#SBATCH --time=1:00:00            # Runtime in D-HH:MM
 #SBATCH --output=logs/job_%j.out  # File to which STDOUT will be written - make sure this is not on $HOME
 #SBATCH --error=logs/job_%j.err   # File to which STDERR will be written - make sure this is not on $HOME
 #SBATCH --mail-type=ALL           # Type of email notification- BEGIN,END,FAIL,ALL
@@ -16,9 +15,5 @@ scontrol show job $SLURM_JOB_ID
 source $HOME/.bashrc
 
 # insert your commands here
-#eval "$(micromamba shell hook --shell=bash)"
-micromamba activate hockey-rl
-pip install git+https://github.com/martius-lab/laser-hockey-env.git
-srun python3 src/trainSAC.py 
-micromamba deactivate
+singularity exec --nv /home/stud54/Hockey/tcml_singularity_rl_lecture/rl_lecture python3 /home/stud54/Hockey/SAC/trainSAC.py
 
