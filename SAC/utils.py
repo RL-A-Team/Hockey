@@ -25,11 +25,12 @@ def evaluation_plot(values, title, running_mean):
 
 
 def plot_actor_critic_losses(critic1_losses, critic2_losses,
-                             actor_losses, running_mean = True):
+                             actor_losses, alpha_losses, running_mean = True):
     """create plot of each of the losses"""
     evaluation_plot(critic1_losses, "Critic 1 loss", running_mean)
     evaluation_plot(critic2_losses, "Critic 2 loss", running_mean)
     evaluation_plot(actor_losses, "Actor loss", running_mean)
+    evaluation_plot(alpha_losses, "Alpha loss", running_mean)
 
 
 def plot_wins_loses(stats_win, stats_lose):
@@ -41,11 +42,12 @@ def plot_wins_loses(stats_win, stats_lose):
 
 
 def save_statistics(critic1_losses, critic2_losses,
-                    actor_losses, stats_win, stats_lose,
+                    actor_losses, alpha_losses, stats_win, stats_lose,
                     filename):
     stats = pd.DataFrame({'critic1_losses': critic1_losses,
                           'critic2_losses': critic2_losses,
                           'actor_losses': actor_losses,
+                          'alpha_losses': alpha_losses,
                           'stats_win': stats_win,
                           'stats_lose': stats_lose})
     stats.to_csv(f'{filename}.csv', index=False)
@@ -53,13 +55,14 @@ def save_statistics(critic1_losses, critic2_losses,
 
 
 def save_evaluation_results(critic1_losses, critic2_losses,
-                            actor_losses, stats_win, stats_lose,
+                            actor_losses, alpha_losses, stats_win, stats_lose,
                             model: SACAgent, running_mean=True):
-    plot_actor_critic_losses(critic1_losses, critic2_losses, actor_losses, running_mean)
+    plot_actor_critic_losses(critic1_losses, critic2_losses, actor_losses, alpha_losses, running_mean)
     plot_wins_loses(stats_win, stats_lose)
 
     dt_now = datetime.now().strftime("%Y%m%dT%H%M%S")
-    save_statistics(critic1_losses, critic2_losses, actor_losses, stats_win, stats_lose, f'eval/sac_stats_{dt_now}')
+    save_statistics(critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose,
+                    f'eval/sac_stats_{dt_now}')
     save_multi_image(f'eval/sac_plots_{dt_now}')
 
     # save model
