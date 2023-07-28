@@ -12,7 +12,7 @@ if __name__ == '__main__':
 
     env = h_env.HockeyEnv(mode=h_env.HockeyEnv_BasicOpponent.TRAIN_DEFENSE)
 
-    render = True
+    render = False
 
     agent = SACAgent(state_dim=env.observation_space.shape, action_dim=env.action_space)
     #agent = pickle.load(open('models/sac_model_20230728T180331.pkl', 'rb'))
