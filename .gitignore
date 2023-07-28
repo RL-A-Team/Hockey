@@ -1,5 +1,8 @@
+eval/
+models/
 .DS_Store
 .idea/
 .vagrant/
 SAC/.DS_Store
 SAC/__pycache__/
+__pycache__/

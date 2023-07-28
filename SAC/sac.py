@@ -96,12 +96,11 @@ class ReplayBuffer:
 # Define the soft actor-critic agent
 class SACAgent:
     def __init__(self, state_dim, action_dim, n_actions=4, hidden_dim=[300,200], alpha=0.2, tau=5e-3, lr=1e-3,
-                 discount=0.99, batch_size=256):
+                 discount=0.99, batch_size=256, autotune=False):
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.n_actions = n_actions
         self.hidden_dim = hidden_dim
-        self.alpha = alpha
         self.tau = tau
         self.lr = lr
         self.discount = discount
@@ -123,6 +122,16 @@ class SACAgent:
         self.critic_optimizer_2 = optim.Adam(self.critic_2.parameters(), lr=self.lr)
 
         self.critic_loss = nn.SmoothL1Loss()
+
+        # Based on https://docs.cleanrl.dev/rl-algorithms/sac/#implementation-details
+        self.autotune = autotune
+        if self.autotune:
+            self.target_entropy = -torch.prod(torch.Tensor(n_actions)).item()
+            self.log_alpha = torch.zeros(1, requires_grad=True)
+            self.alpha = self.log_alpha.exp().item()
+            self.alpha_optimizer = optim.Adam([self.log_alpha], lr=self.lr)
+        else:
+            self.alpha = alpha
 
     def select_action(self, state):
         state = torch.FloatTensor(state).unsqueeze(0)
@@ -170,6 +179,16 @@ class SACAgent:
         actor_loss.backward()
         self.actor_optimizer.step()
 
+        if self.autotune:
+            alpha_loss = (-self.log_alpha * (log_prob + self.target_entropy).detach()).mean()
+
+            self.alpha_optimizer.zero_grad()
+            alpha_loss.backward()
+            self.alpha_optimizer.step()
+            self.alpha = self.log_alpha.exp().item()
+        else:
+            alpha_loss = torch.tensor(0.)
+
         # Soft Updates
         for target_param, param in zip(self.critic_target_1.parameters(),
                                        self.critic_1.parameters()):
@@ -179,7 +198,7 @@ class SACAgent:
                                        self.critic_2.parameters()):
             target_param.data.copy_(target_param.data * (1.0 - self.tau) + param.data * self.tau)
 
-        return critic1_loss.item(), critic2_loss.item(), actor_loss.item()
+        return critic1_loss.item(), critic2_loss.item(), actor_loss.item(), alpha_loss.item()
 
     def store_transition(self, transition):
         self.replay_buffer.add_transition(transition)
