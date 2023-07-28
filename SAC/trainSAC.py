@@ -22,8 +22,6 @@ if __name__ == '__main__':
     grad_updates = 0
     new_op_grad = []
 
-    total_reward = 0
-
     critic1_losses = []
     critic2_losses = []
     actor_losses = []
@@ -37,6 +35,8 @@ if __name__ == '__main__':
 
         opponent = h_env.BasicOpponent(weak=True)
 
+        first_time_touch = 1
+        touched = 0
 
         for step in range(200): #250):
             a1 = agent.select_action(state).detach().numpy()[0]
@@ -44,12 +44,18 @@ if __name__ == '__main__':
 
             ns, r, d, _, info = env.step(np.hstack([a1, a2]))
 
-            reward = r + 3*info['reward_closeness_to_puck'] + 3*info['reward_puck_direction']
-            print('Reward', reward, 3*info['reward_closeness_to_puck'], 3*info['reward_puck_direction'])
+            touched = max(touched, info['reward_touch_puck'])
+            step_reward = (
+                    r
+                    + 5 * info['reward_closeness_to_puck']
+                    - (1 - touched) * 0.1
+                    + touched * first_time_touch * 0.1 * step
+            )
+            first_time_touch = 1 - touched
+            #print('Reward', reward, 10*info['reward_closeness_to_puck'], 10*info['reward_puck_direction'])
 
-            total_reward += reward
 
-            agent.store_transition((state, a1, reward, ns, d))
+            agent.store_transition((state, a1, step_reward, ns, d))
 
             if render:
                 time.sleep(0.01)
@@ -77,6 +83,5 @@ if __name__ == '__main__':
 
     env.close()
 
-    print(f'Total reward {total_reward}')
     utils.save_evaluation_results(critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose,
                                   agent, False)
