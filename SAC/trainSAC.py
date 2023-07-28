@@ -10,12 +10,12 @@ import utils
 
 if __name__ == '__main__':
 
-    env = h_env.HockeyEnv(mode=h_env.HockeyEnv_BasicOpponent.TRAIN_DEFENSE)
+    env = h_env.HockeyEnv(mode=h_env.HockeyEnv_BasicOpponent.TRAIN_SHOOTING)
 
     render = False
 
-    agent = SACAgent(state_dim=env.observation_space.shape, action_dim=env.action_space, autotune=True)
-    #agent = pickle.load(open('models/sac_model_20230728T180331.pkl', 'rb'))
+    #agent = SACAgent(state_dim=env.observation_space.shape, action_dim=env.action_space, autotune=True)
+    agent = pickle.load(open('models/sac_model_20230728T201105.pkl', 'rb'))
 
     episode_counter = 1
     total_step_counter = 0
