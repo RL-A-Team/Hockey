@@ -29,7 +29,7 @@ if __name__ == '__main__':
     stats_win = []
     stats_lose = []
 
-    while episode_counter <= 1500: #5000:
+    while episode_counter <= 1000: #5000:
         state, info = env.reset()
         obs_agent2 = env.obs_agent_two()
 
