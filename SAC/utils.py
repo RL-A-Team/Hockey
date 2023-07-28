@@ -14,7 +14,7 @@ def running_mean(x, N):
     return (cumsum[N:] - cumsum[:-N]) / float(N)
 
 
-def evaluation_plot(values: list[float], title: str, running_mean: bool):
+def evaluation_plot(values, title, running_mean):
     """create plot of the running mean values"""
     if running_mean:
         values = running_mean(np.asarray(values), 500)
@@ -24,15 +24,15 @@ def evaluation_plot(values: list[float], title: str, running_mean: bool):
     ax.set_title(title)
 
 
-def plot_actor_critic_losses(critic1_losses: list[float], critic2_losses: list[float],
-                             actor_losses: list[float], running_mean = True):
+def plot_actor_critic_losses(critic1_losses, critic2_losses,
+                             actor_losses, running_mean = True):
     """create plot of each of the losses"""
     evaluation_plot(critic1_losses, "Critic 1 loss", running_mean)
     evaluation_plot(critic2_losses, "Critic 2 loss", running_mean)
     evaluation_plot(actor_losses, "Actor loss", running_mean)
 
 
-def plot_wins_loses(stats_win: list[float], stats_lose: list[float]):
+def plot_wins_loses(stats_win, stats_lose):
     fig, ax = plt.subplots()
     ax.plot(np.cumsum(stats_win), color='green', label='Win')
     ax.plot(np.cumsum(stats_lose), color='red', label='Lose')
@@ -40,9 +40,9 @@ def plot_wins_loses(stats_win: list[float], stats_lose: list[float]):
     ax.legend()
 
 
-def save_statistics(critic1_losses: list[float], critic2_losses: list[float],
-                    actor_losses: list[float], stats_win: list[float], stats_lose: list[float],
-                    filename: str):
+def save_statistics(critic1_losses, critic2_losses,
+                    actor_losses, stats_win, stats_lose,
+                    filename):
     stats = pd.DataFrame({'critic1_losses': critic1_losses,
                           'critic2_losses': critic2_losses,
                           'actor_losses': actor_losses,
@@ -52,8 +52,8 @@ def save_statistics(critic1_losses: list[float], critic2_losses: list[float],
     print(f"Statistics saved in file {filename}.csv")
 
 
-def save_evaluation_results(critic1_losses: list[float], critic2_losses: list[float],
-                            actor_losses: list[float], stats_win: list[float], stats_lose: list[float],
+def save_evaluation_results(critic1_losses, critic2_losses,
+                            actor_losses, stats_win, stats_lose,
                             model: SACAgent, running_mean=True):
     plot_actor_critic_losses(critic1_losses, critic2_losses, actor_losses, running_mean)
     plot_wins_loses(stats_win, stats_lose)
@@ -66,7 +66,7 @@ def save_evaluation_results(critic1_losses: list[float], critic2_losses: list[fl
     pickle.dump(model, open(f'models/sac_model_{dt_now}.pkl', 'wb'))
 
 
-def save_multi_image(filename: str):
+def save_multi_image(filename):
     """ Saves all produced figures as pdf in the given filename
 
         Source:
