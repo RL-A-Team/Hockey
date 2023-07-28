@@ -4,7 +4,7 @@ from laserhockey import hockey_env as h_env
 from sac import SACAgent
 import time
 
-from utils import utils
+import utils
 
 if __name__ == '__main__':
 
