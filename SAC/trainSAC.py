@@ -58,11 +58,11 @@ if __name__ == '__main__':
 
         print(f'Epsiode {episode_counter}: Winner {env.winner}')
 
-    plt.plot(np.arange(len(critic1_losses)), critic1_losses, label='Critic 1')
-    plt.plot(np.arange(len(critic2_losses)), critic2_losses, label='Critic 2')
-    plt.plot(np.arange(len(actor_losses)), actor_losses, label='Actor')
-    plt.legend()
-    plt.show()
+    #plt.plot(np.arange(len(critic1_losses)), critic1_losses, label='Critic 1')
+    #plt.plot(np.arange(len(critic2_losses)), critic2_losses, label='Critic 2')
+    #plt.plot(np.arange(len(actor_losses)), actor_losses, label='Actor')
+    #plt.legend()
+    #plt.show()
 
     env.close()
     print(f'Total reward {total_reward}')
