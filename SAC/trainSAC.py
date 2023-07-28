@@ -44,8 +44,8 @@ if __name__ == '__main__':
 
             ns, r, d, _, info = env.step(np.hstack([a1, a2]))
 
-            reward = r + info['reward_closeness_to_puck'] + info['reward_puck_direction']
-            print('Reward', reward, info['reward_closeness_to_puck'], info['reward_puck_direction'])
+            reward = r + 3*info['reward_closeness_to_puck'] + 3*info['reward_puck_direction']
+            print('Reward', reward, 3*info['reward_closeness_to_puck'], 3*info['reward_puck_direction'])
 
             total_reward += reward
 
