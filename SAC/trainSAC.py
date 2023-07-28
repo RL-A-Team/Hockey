@@ -14,7 +14,7 @@ if __name__ == '__main__':
 
     render = False
 
-    agent = SACAgent(state_dim=env.observation_space.shape, action_dim=env.action_space)
+    agent = SACAgent(state_dim=env.observation_space.shape, action_dim=env.action_space, autotune=True)
     #agent = pickle.load(open('models/sac_model_20230728T180331.pkl', 'rb'))
 
     episode_counter = 1
@@ -29,14 +29,14 @@ if __name__ == '__main__':
     stats_win = []
     stats_lose = []
 
-    while episode_counter <= 1000: #5000:
+    while episode_counter <= 5000:
         state, info = env.reset()
         obs_agent2 = env.obs_agent_two()
 
         opponent = h_env.BasicOpponent(weak=True)
 
 
-        for step in range(200): #250):
+        for step in range(250):
             a1 = agent.select_action(state).detach().numpy()[0]
             a2 = opponent.act(obs_agent2)
 
