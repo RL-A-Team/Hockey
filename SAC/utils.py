@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from datetime import datetime
 
-from SAC.sac import SACAgent
+from sac import SACAgent
 
 
 def running_mean(x, N):
