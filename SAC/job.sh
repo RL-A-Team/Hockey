@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --job-name=HockeySAC
-#SBATCH --cpus-per-task=2         # Number of CPU cores per task
+#SBATCH --cpus-per-task=4         # Number of CPU cores per task
 #SBATCH --mem-per-cpu=1G
 #SBATCH --gres=gpu:1    	# optionally type and number of gpus
-#SBATCH --time=1:00:00            # Runtime in D-HH:MM
+#SBATCH --time=00:15:00            # Runtime in D-HH:MM
 #SBATCH --output=logs/job_%j.out  # File to which STDOUT will be written - make sure this is not on $HOME
 #SBATCH --error=logs/job_%j.err   # File to which STDERR will be written - make sure this is not on $HOME
 #SBATCH --mail-type=ALL           # Type of email notification- BEGIN,END,FAIL,ALL
