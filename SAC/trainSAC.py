@@ -12,7 +12,9 @@ if __name__ == '__main__':
 
     env = h_env.HockeyEnv(mode=h_env.HockeyEnv_BasicOpponent.TRAIN_DEFENSE)
 
-    agent = SACAgent(state_dim=env.observation_space.shape, action_dim=env.action_space)
+    render = True
+
+    agent = SACAgent(state_dim=env.observation_space.shape, action_dim=env.action_space, alpha=0)
     #agent = pickle.load(open('models/sac_model_20230728T180331.pkl', 'rb'))
 
     episode_counter = 1
@@ -29,25 +31,28 @@ if __name__ == '__main__':
     stats_win = []
     stats_lose = []
 
-    while episode_counter <= 5: #5000:
+    while episode_counter <= 1500: #5000:
         state, info = env.reset()
         obs_agent2 = env.obs_agent_two()
 
         opponent = h_env.BasicOpponent(weak=True)
 
 
-        for step in range(10): #250):
+        for step in range(200): #250):
             a1 = agent.select_action(state).detach().numpy()[0]
             a2 = opponent.act(obs_agent2)
 
             ns, r, d, _, info = env.step(np.hstack([a1, a2]))
 
-            total_reward += r
+            reward = r + info['reward_closeness_to_puck'] + info['reward_puck_direction']
 
-            agent.store_transition((state, a1, r, ns, d))
+            total_reward += reward
 
-            time.sleep(0.01)
-            #env.render()
+            agent.store_transition((state, a1, reward, ns, d))
+
+            if render:
+                time.sleep(0.01)
+                env.render()
 
             if d:
                 break
