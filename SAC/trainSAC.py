@@ -22,14 +22,14 @@ if __name__ == '__main__':
     critic2_losses = []
     actor_losses = []
 
-    while episode_counter <= 5000:
+    while episode_counter <= 500: #5000:
         state, info = env.reset()
         obs_agent2 = env.obs_agent_two()
 
         opponent = h_env.BasicOpponent(weak=True)
 
 
-        for step in range(250):
+        for step in range(100): #250):
             a1 = agent.select_action(state).detach().numpy()[0]
             a2 = opponent.act(obs_agent2)
 
