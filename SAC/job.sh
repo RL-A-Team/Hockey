@@ -15,5 +15,5 @@ scontrol show job $SLURM_JOB_ID
 source $HOME/.bashrc
 
 # insert your commands here
-singularity exec --nv /home/stud54/Hockey/tcml_singularity_rl_lecture/rl_lecture python3 /home/stud54/Hockey/SAC/trainSAC.py --model models/sac_model_20230803T184342.pkl --mode shooting
+singularity exec --nv /home/stud54/Hockey/tcml_singularity_rl_lecture/rl_lecture python3 /home/stud54/Hockey/SAC/trainSAC.py --model models/sac_model_20230803T184342.pkl --mode shooting --episodes 5000
 

@@ -55,9 +55,10 @@ def save_statistics(critic1_losses, critic2_losses,
 
 
 def save_evaluation_results(critic1_losses, critic2_losses,
-                            actor_losses, alpha_losses, stats_win, stats_lose,
+                            actor_losses, alpha_losses, stats_win, stats_lose, mean_rewards,
                             model: SACAgent, running_mean=True):
     plot_actor_critic_losses(critic1_losses, critic2_losses, actor_losses, alpha_losses, running_mean)
+    evaluation_plot(mean_rewards, "Mean reward per episode", False)
     plot_wins_loses(stats_win, stats_lose)
 
     dt_now = datetime.now().strftime("%Y%m%dT%H%M%S")
