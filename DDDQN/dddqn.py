@@ -139,6 +139,7 @@ class DDDQNAgent:
         
         # check if GPU is available
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = "cpu" # TODO maybe change?
                          
         # initialize agent parameters, create networks
         self.state_dim = state_dim
