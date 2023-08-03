@@ -28,6 +28,23 @@ opts = parser.parse_args()
 
 if __name__ == '__main__':
 
+    print('--------------------------------------')
+    print('---------TRAINING PARAMETER-----------')
+    print(f'Training mode: {opts.mode}')
+    print(f'Epsiodes: {opts.episodes}')
+    print(f'Steps: {opts.steps}')
+    print('')
+    print(f'Load model: {opts.model}')
+    print('')
+    print(f'Alpha: {opts.alpha}')
+    print(f'Tau: {opts.tau}')
+    print(f'Learning rate: {opts.lr}')
+    print(f'Discount factor: {opts.discount}')
+    print(f'Batch size: {opts.batchsize}')
+    print(f'Autotune: {opts.autotune}')
+    print('--------------------------------------')
+    print('')
+
     if opts.mode == 'd' or opts.mode == 'defense':
         mode = h_env.HockeyEnv.TRAIN_DEFENSE
     elif opts.mode == 's' or opts.mode == 'shooting':
@@ -90,7 +107,7 @@ if __name__ == '__main__':
         stats_win.append(1 if env.winner == 1 else 0)
         stats_lose.append(1 if env.winner == -1 else 0)
 
-        print(f'Episode {episode+1}: Winner {env.winner}')
+        #print(f'Episode {episode+1}: Winner {env.winner}')
 
     env.close()
 
