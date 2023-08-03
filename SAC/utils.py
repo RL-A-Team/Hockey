@@ -54,12 +54,37 @@ def save_statistics(critic1_losses, critic2_losses,
     print(f"Statistics saved in file {filename}.csv")
 
 
+def plot_percentages(stats_win, stats_lose):
+    num_ones = 0
+    win_percentages = []
+
+    for i, val in enumerate(stats_win, 1):
+        num_ones += val
+        win_percent = (num_ones / i)
+        win_percentages.append(win_percent)
+
+    num_ones = 0
+    lose_percentages = []
+    for i, val in enumerate(stats_lose, 1):
+        num_ones += val
+        lose_percent = (num_ones / i)
+        lose_percentages.append(lose_percent)
+
+    fig, ax = plt.subplots()
+    ax.plot(range(1, len(stats_win) + 1), win_percentages, color='green')
+    ax.plot(range(1, len(stats_lose) + 1), lose_percentages, color='red')
+    ax.set_title('Percentage of wins and losses')
+
+
 def save_evaluation_results(critic1_losses, critic2_losses,
-                            actor_losses, alpha_losses, stats_win, stats_lose, mean_rewards,
+                            actor_losses, alpha_losses, stats_win, stats_lose, mean_rewards, mean_win, mean_lose,
                             model: SACAgent, running_mean=True):
     plot_actor_critic_losses(critic1_losses, critic2_losses, actor_losses, alpha_losses, running_mean)
     evaluation_plot(mean_rewards, "Mean reward per episode", False)
+    evaluation_plot(mean_win, "Mean wins per episode", False)
+    evaluation_plot(mean_lose, "Mean lose per episode", False)
     plot_wins_loses(stats_win, stats_lose)
+    plot_percentages(stats_win, stats_lose)
 
     dt_now = datetime.now().strftime("%Y%m%dT%H%M%S")
 

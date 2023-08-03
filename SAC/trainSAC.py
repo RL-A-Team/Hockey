@@ -73,6 +73,8 @@ if __name__ == '__main__':
     alpha_losses = []
     stats_win = []
     stats_lose = []
+    mean_win = []
+    mean_lose = []
 
     for episode in range(opts.episodes):
         state, info = env.reset()
@@ -81,6 +83,8 @@ if __name__ == '__main__':
         opponent = h_env.BasicOpponent(weak=True)
 
         episode_rewards = []
+        episode_win = []
+        episode_lose = []
 
         for step in range(opts.steps):
             a1 = agent.select_action(state).detach().numpy()[0]
@@ -90,6 +94,8 @@ if __name__ == '__main__':
 
             reward = r + 10 * info['reward_closeness_to_puck'] + 10 * info['reward_puck_direction']
             episode_rewards.append(reward)
+            episode_win.append(1 if info['winner'] == 1 else 0)
+            episode_lose.append(1 if env.winner == -1 else 0)
 
             agent.store_transition((state, a1, reward, ns, d))
 
@@ -110,6 +116,8 @@ if __name__ == '__main__':
         alpha_losses.append(alpha_loss)
 
         mean_rewards.append(np.array(episode_rewards).mean())
+        mean_win.append(np.array(episode_win).mean())
+        mean_lose.append(np.array(episode_lose).mean())
         stats_win.append(1 if env.winner == 1 else 0)
         stats_lose.append(1 if env.winner == -1 else 0)
 
@@ -118,7 +126,7 @@ if __name__ == '__main__':
     env.close()
 
     utils.save_evaluation_results(critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose,
-                                  mean_rewards, agent, False)
+                                  mean_rewards, mean_win, mean_lose, agent, False)
 
     # print the execution time
     et = time.time()
