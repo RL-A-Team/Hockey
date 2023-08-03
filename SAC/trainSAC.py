@@ -27,6 +27,7 @@ parser.add_argument('--batchsize', type=float, default=256, help='Batch size')
 opts = parser.parse_args()
 
 if __name__ == '__main__':
+    st = time.time()
 
     print('--------------------------------------')
     print('---------TRAINING PARAMETER-----------')
@@ -107,9 +108,15 @@ if __name__ == '__main__':
         stats_win.append(1 if env.winner == 1 else 0)
         stats_lose.append(1 if env.winner == -1 else 0)
 
-        #print(f'Episode {episode+1}: Winner {env.winner}')
+        # print(f'Episode {episode+1}: Winner {env.winner}')
 
     env.close()
 
     utils.save_evaluation_results(critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose,
                                   agent, False)
+
+    # print the execution time
+    et = time.time()
+    elapsed_time = et - st
+    print("")
+    print('Execution time:', round(elapsed_time / 60), 'minutes')

@@ -61,12 +61,24 @@ def save_evaluation_results(critic1_losses, critic2_losses,
     plot_wins_loses(stats_win, stats_lose)
 
     dt_now = datetime.now().strftime("%Y%m%dT%H%M%S")
-    save_statistics(critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose,
-                    f'eval/sac_stats_{dt_now}')
-    save_multi_image(f'eval/sac_plots_{dt_now}')
+
+    s_filename = f'eval/sac_stats_{dt_now}'
+    save_statistics(critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose, s_filename)
+
+    p_filename = f'eval/sac_plots_{dt_now}'
+    save_multi_image(p_filename)
 
     # save model
-    pickle.dump(model, open(f'models/sac_model_{dt_now}.pkl', 'wb'))
+    m_filename = f'models/sac_model_{dt_now}.pkl'
+    pickle.dump(model, open(m_filename, 'wb'))
+
+    print('')
+    print('--------------------------------------')
+    print('COPY COMMANDS')
+    print(f'scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_stats_20230803T184342.csv .')
+    print(f'scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_plots_20230803T184342.pdf .')
+    print(f'scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/models/sac_model_20230803T184342.pkl .')
+    print('--------------------------------------')
 
 
 def save_multi_image(filename):
