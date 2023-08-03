@@ -2,47 +2,100 @@ import pickle
 
 import numpy as np
 from laserhockey import hockey_env as h_env
-
+from argparse import ArgumentParser
 from sac import SACAgent
 import time
 
 import utils
 
+parser = ArgumentParser()
+parser.add_argument('--render', action='store_true',
+                    help='Render the training process (significantly increases running time)')
+parser.add_argument('--episodes', type=int, default=10000, help='Number of episodes to train')
+parser.add_argument('--steps', type=int, default=500, help='Number of maximal steps per episode')
+parser.add_argument('--mode', type=str, default='d', help='Training mode: d - defense, s - shooting, n - normal')
+parser.add_argument('--model', type=str, default=None, help='Path to pretrained model to load')
+
+# SAC hyperparameter
+parser.add_argument('--autotune', action='store_true', help='Autotune the entropy value')
+parser.add_argument('--alpha', type=float, default=0.2, help='Alpha value for the SAC model')
+parser.add_argument('--tau', type=float, default=5e-3, help='Tau value for the SAC model')
+parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate')
+parser.add_argument('--discount', type=float, default=0.99, help='Discount factor')
+parser.add_argument('--batchsize', type=float, default=256, help='Batch size')
+
+opts = parser.parse_args()
+
 if __name__ == '__main__':
+    st = time.time()
 
-    env = h_env.HockeyEnv(mode=h_env.HockeyEnv_BasicOpponent.TRAIN_DEFENSE)
+    print('--------------------------------------')
+    print('---------TRAINING PARAMETER-----------')
+    print(f'Training mode: {opts.mode}')
+    print(f'Epsiodes: {opts.episodes}')
+    print(f'Steps: {opts.steps}')
+    print('')
+    print(f'Load model: {opts.model}')
+    print('')
+    print(f'Alpha: {opts.alpha}')
+    print(f'Tau: {opts.tau}')
+    print(f'Learning rate: {opts.lr}')
+    print(f'Discount factor: {opts.discount}')
+    print(f'Batch size: {opts.batchsize}')
+    print(f'Autotune: {opts.autotune}')
+    print('--------------------------------------')
+    print('')
 
-    render = False
+    if opts.mode == 'd' or opts.mode == 'defense':
+        mode = h_env.HockeyEnv.TRAIN_DEFENSE
+    elif opts.mode == 's' or opts.mode == 'shooting':
+        mode = h_env.HockeyEnv.TRAIN_SHOOTING
+    elif opts.mode == 'n' or opts.mode == 'normal':
+        mode = h_env.HockeyEnv.NORMAL
+    else:
+        raise ValueError(f'Mode {opts.mode} not defined! Please define mode as d - defense, s - shooting or n - normal')
 
-    agent = SACAgent(state_dim=env.observation_space.shape, action_dim=env.action_space)
-    #agent = pickle.load(open('models/sac_model_20230728T180331.pkl', 'rb'))
+    env = h_env.HockeyEnv(mode=mode)
 
-    episode_counter = 1
-    total_step_counter = 0
-    grad_updates = 0
-    new_op_grad = []
+    render = opts.render
 
+    if opts.model is not None:
+        agent = pickle.load(open(opts.model, 'rb'))
+    else:
+        agent = SACAgent(state_dim=env.observation_space.shape, action_dim=env.action_space, alpha=opts.alpha,
+                         tau=opts.tau, lr=opts.lr, discount=opts.discount, batch_size=opts.batchsize,
+                         autotune=opts.autotune)
+
+    mean_rewards = []
     critic1_losses = []
     critic2_losses = []
     actor_losses = []
     alpha_losses = []
     stats_win = []
     stats_lose = []
+    mean_win = []
+    mean_lose = []
 
-    while episode_counter <= 1000: #5000:
+    for episode in range(opts.episodes):
         state, info = env.reset()
         obs_agent2 = env.obs_agent_two()
 
         opponent = h_env.BasicOpponent(weak=True)
 
+        episode_rewards = []
+        episode_win = []
+        episode_lose = []
 
-        for step in range(200): #250):
+        for step in range(opts.steps):
             a1 = agent.select_action(state).detach().numpy()[0]
             a2 = opponent.act(obs_agent2)
 
             ns, r, d, _, info = env.step(np.hstack([a1, a2]))
 
-            reward = r + 10*info['reward_closeness_to_puck'] + 10*info['reward_puck_direction']
+            reward = r + 10 * info['reward_closeness_to_puck'] + 10 * info['reward_puck_direction']
+            episode_rewards.append(reward)
+            episode_win.append(1 if info['winner'] == 1 else 0)
+            episode_lose.append(1 if env.winner == -1 else 0)
 
             agent.store_transition((state, a1, reward, ns, d))
 
@@ -55,7 +108,6 @@ if __name__ == '__main__':
 
             state = ns
             obs_agent2 = env.obs_agent_two()
-            total_step_counter += 1
 
         critic1_loss, critic2_loss, actor_loss, alpha_loss = agent.update()
         critic1_losses.append(critic1_loss)
@@ -63,14 +115,21 @@ if __name__ == '__main__':
         actor_losses.append(actor_loss)
         alpha_losses.append(alpha_loss)
 
+        mean_rewards.append(np.array(episode_rewards).mean())
+        mean_win.append(np.array(episode_win).mean())
+        mean_lose.append(np.array(episode_lose).mean())
         stats_win.append(1 if env.winner == 1 else 0)
         stats_lose.append(1 if env.winner == -1 else 0)
 
-        episode_counter += 1
-
-        print(f'Epsiode {episode_counter}: Winner {env.winner}')
+        # print(f'Episode {episode+1}: Winner {env.winner}')
 
     env.close()
 
     utils.save_evaluation_results(critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose,
-                                  agent, False)
+                                  mean_rewards, mean_win, mean_lose, agent, False)
+
+    # print the execution time
+    et = time.time()
+    elapsed_time = et - st
+    print("")
+    print('Execution time:', round(elapsed_time / 60), 'minutes')

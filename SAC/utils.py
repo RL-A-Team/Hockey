@@ -54,19 +54,57 @@ def save_statistics(critic1_losses, critic2_losses,
     print(f"Statistics saved in file {filename}.csv")
 
 
+def plot_percentages(stats_win, stats_lose):
+    num_ones = 0
+    win_percentages = []
+
+    for i, val in enumerate(stats_win, 1):
+        num_ones += val
+        win_percent = (num_ones / i)
+        win_percentages.append(win_percent)
+
+    num_ones = 0
+    lose_percentages = []
+    for i, val in enumerate(stats_lose, 1):
+        num_ones += val
+        lose_percent = (num_ones / i)
+        lose_percentages.append(lose_percent)
+
+    fig, ax = plt.subplots()
+    ax.plot(range(1, len(stats_win) + 1), win_percentages, color='green')
+    ax.plot(range(1, len(stats_lose) + 1), lose_percentages, color='red')
+    ax.set_title('Percentage of wins and losses')
+
+
 def save_evaluation_results(critic1_losses, critic2_losses,
-                            actor_losses, alpha_losses, stats_win, stats_lose,
+                            actor_losses, alpha_losses, stats_win, stats_lose, mean_rewards, mean_win, mean_lose,
                             model: SACAgent, running_mean=True):
     plot_actor_critic_losses(critic1_losses, critic2_losses, actor_losses, alpha_losses, running_mean)
+    evaluation_plot(mean_rewards, "Mean reward per episode", False)
+    evaluation_plot(mean_win, "Mean wins per episode", False)
+    evaluation_plot(mean_lose, "Mean lose per episode", False)
     plot_wins_loses(stats_win, stats_lose)
+    plot_percentages(stats_win, stats_lose)
 
     dt_now = datetime.now().strftime("%Y%m%dT%H%M%S")
-    save_statistics(critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose,
-                    f'eval/sac_stats_{dt_now}')
-    save_multi_image(f'eval/sac_plots_{dt_now}')
+
+    s_filename = f'eval/sac_stats_{dt_now}'
+    save_statistics(critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose, s_filename)
+
+    p_filename = f'eval/sac_plots_{dt_now}'
+    save_multi_image(p_filename)
 
     # save model
-    pickle.dump(model, open(f'models/sac_model_{dt_now}.pkl', 'wb'))
+    m_filename = f'models/sac_model_{dt_now}.pkl'
+    pickle.dump(model, open(m_filename, 'wb'))
+
+    print('')
+    print('--------------------------------------')
+    print('COPY COMMANDS')
+    print(f'scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_stats_20230803T184342.csv .')
+    print(f'scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_plots_20230803T184342.pdf .')
+    print(f'scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/models/sac_model_20230803T184342.pkl .')
+    print('--------------------------------------')
 
 
 def save_multi_image(filename):
