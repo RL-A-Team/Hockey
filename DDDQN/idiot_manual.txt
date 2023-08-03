@@ -1,0 +1,8 @@
+ausführen im Hockey Ordner:
+sbatch DDDQN/job.sh
+
+meine Jobs anzeigen:
+squeue --me
+
+errors und output:
+~/Hockey/logs/job_<job_id>.[err | out]
