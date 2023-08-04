@@ -1,3 +1,6 @@
+ssh auf Cluster:
+ssh stud54@tcml-master01.uni-tuebingen.de
+
 ausführen im Hockey Ordner:
 sbatch DDDQN/job.sh
 
