@@ -11,11 +11,11 @@ weak_opponent = True
 #game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_DEFENSE
 #game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_SHOOTING
 game_mode = h_env.HockeyEnv_BasicOpponent.NORMAL
-episodes = 250
+episodes = 100
 use_checkpoint = False
 visualize = False
 
-subtasks = 20
+subtasks = 625
 
 ##########
 current_subtask = 0
@@ -33,8 +33,6 @@ for a in range(1, 6):
 
 # split factors to subtasks
 sub_fac_len = len(factors) // subtasks
-print(sub_fac_len)
-
 
 sub_fac = []
 
