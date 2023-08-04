@@ -4,8 +4,7 @@ from laserhockey import hockey_env as h_env
 from dddqn import DDDQNAgent
 
 import time
-
-print(__name__)
+import sys
 
 # parameters for manual configuration
 weak_opponent = True
@@ -16,8 +15,13 @@ episodes = 250
 use_checkpoint = False
 visualize = False
 
-subtasks = 625
+subtasks = 20
+
 current_subtask = 0
+try:
+    current_subtask = int(sys.argv[1])
+except ValueError:
+    print('current subtask [integer] required')
 
 factors = []
 
@@ -148,7 +152,7 @@ for factor in factors:
 max_rew = max(fac_rewards)
 max_rew_index = fac_rewards.index(max_rew)
 print()
-print('BEST RESULT OF ROUND ' + str(current_subtask) + ': ')
+print('BEST RESULT OF SUBTASK ' + str(current_subtask) + ': ')
 print('max_rew: ' + str(max_rew))
 print('best factors: ' + str(factors[max_rew_index]))
 
