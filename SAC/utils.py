@@ -9,7 +9,7 @@ from datetime import datetime
 from sac import SACAgent
 
 
-def running_mean(x, N):
+def cal_running_mean(x, N):
     cumsum = np.cumsum(np.insert(x, 0, 0))
     return (cumsum[N:] - cumsum[:-N]) / float(N)
 
@@ -17,15 +17,36 @@ def running_mean(x, N):
 def evaluation_plot(values, title, running_mean):
     """create plot of the running mean values"""
     if running_mean:
-        values = running_mean(np.asarray(values), 500)
+        values = cal_running_mean(np.asarray(values), 500)
 
     fig, ax = plt.subplots()
     ax.plot(values)
     ax.set_title(title)
 
 
+def longest(lists: list[list]):
+    max = 0
+    for list in lists:
+        if len(list) > max:
+            max = len(list)
+
+    return max
+
+
+def fill_nan(lists: list[list]):
+    desired_length = longest(lists)
+
+    for i, list in enumerate(lists):
+        diff = desired_length - len(list)
+        if diff > 0:
+            add = [None] * diff
+            list.extend(add)
+
+    return tuple(lists)
+
+
 def plot_actor_critic_losses(critic1_losses, critic2_losses,
-                             actor_losses, alpha_losses, running_mean = True):
+                             actor_losses, alpha_losses, running_mean=True):
     """create plot of each of the losses"""
     evaluation_plot(critic1_losses, "Critic 1 loss", running_mean)
     evaluation_plot(critic2_losses, "Critic 2 loss", running_mean)
@@ -44,6 +65,9 @@ def plot_wins_loses(stats_win, stats_lose):
 def save_statistics(critic1_losses, critic2_losses,
                     actor_losses, alpha_losses, stats_win, stats_lose,
                     filename):
+    critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose = \
+        fill_nan([critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose])
+
     stats = pd.DataFrame({'critic1_losses': critic1_losses,
                           'critic2_losses': critic2_losses,
                           'actor_losses': actor_losses,
@@ -80,9 +104,9 @@ def save_evaluation_results(critic1_losses, critic2_losses,
                             actor_losses, alpha_losses, stats_win, stats_lose, mean_rewards, mean_win, mean_lose,
                             model: SACAgent, running_mean=True):
     plot_actor_critic_losses(critic1_losses, critic2_losses, actor_losses, alpha_losses, running_mean)
-    evaluation_plot(mean_rewards, "Mean reward per episode", False)
-    evaluation_plot(mean_win, "Mean wins per episode", False)
-    evaluation_plot(mean_lose, "Mean lose per episode", False)
+    evaluation_plot(mean_rewards, "Mean reward per episode", True)
+    evaluation_plot(mean_win, "Mean wins per episode", True)
+    evaluation_plot(mean_lose, "Mean lose per episode", True)
     plot_wins_loses(stats_win, stats_lose)
     plot_percentages(stats_win, stats_lose)
 
