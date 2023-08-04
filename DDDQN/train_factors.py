@@ -11,19 +11,15 @@ weak_opponent = True
 #game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_DEFENSE
 #game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_SHOOTING
 game_mode = h_env.HockeyEnv_BasicOpponent.NORMAL
-episodes = 2# 250
+episodes = 250
 use_checkpoint = False
 visualize = False
 
 subtasks = 20
 
+##########
 current_subtask = 0
-#try:
-#    current_subtask = int(sys.argv[1])
-#except ValueError:
-#    print('current subtask [integer] required')
-
-print(sys.argv)
+##########
 
 factors = []
 
