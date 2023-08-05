@@ -265,10 +265,11 @@ class SACAgent:
 
         if self.autotune:
             alpha_loss = (-self.log_alpha * (log_prob + self.target_entropy).detach()).mean()
-
+            print('alpha_loss', alpha_loss)
             self.alpha_optimizer.zero_grad()
             alpha_loss.backward()
             self.alpha_optimizer.step()
+            print('log_alpha', self.log_alpha.item())
             self.alpha = self.log_alpha.exp().item()
         else:
             alpha_loss = torch.tensor(0.)
