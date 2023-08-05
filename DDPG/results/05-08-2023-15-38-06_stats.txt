@@ -1,0 +1,2 @@
+wins	losses	draws
+0	6	4
