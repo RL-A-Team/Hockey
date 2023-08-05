@@ -7,7 +7,7 @@ from ReplayBuffer import ReplayBuffer
 
 # DDPG Agent
 class DDPGAgent:
-    def __init__(self, state_dim, action_dim, hidden_size_actor, hidden_size_critic, buffer_size=100000):
+    def __init__(self, state_dim, action_dim, hidden_size_actor, hidden_size_critic=128, buffer_size=100000):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.actor = Actor(state_dim, action_dim, hidden_size_actor).to(self.device)
         self.actor_target = Actor(state_dim, action_dim, hidden_size_actor).to(self.device)

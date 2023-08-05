@@ -6,12 +6,10 @@ from laserhockey import hockey_env as h_env
 import sys
 from DDPGAgent import DDPGAgent
 from Parser import opts
+from Evaluater import Evaluater
 
 if len(sys.argv) > 1:
-    if isinstance(sys.argv[1], str):
-        NAME = sys.argv[1]
-    else:
-        NAME = "test"
+    NAME = sys.argv[1]
 else:
     NAME = "test"
 
@@ -112,17 +110,24 @@ def train(env_name):
             losses[episode-1] = [0 , 0, episode_reward]
 
         if (episode % milestone == 0):
-            torch.save(agent.actor.state_dict(), f"{MODEL_DIR}{NAME}_{env_name}-actor-m{mode}-h_size{opts.hidden_size_actor}-e{episode}.pth")
-            torch.save(agent.actor.state_dict(), f"{MODEL_DIR}{NAME}_{env_name}-critic-m{mode}-h_size{opts.hidden_size_critic}-e{episode}.pth")
+            torch.save(agent.actor.state_dict(), f"{MODEL_DIR}{NAME}_{env_name}_actor_m{mode}_h-size{opts.hidden_size_actor}_e{episode}.pth")
+            torch.save(agent.actor.state_dict(), f"{MODEL_DIR}{NAME}_{env_name}_critic_m{mode}_h-size{opts.hidden_size_critic}-e{episode}.pth")
     return {"reward": losses[:, 2], "actor_loss": losses[:, 0], "critic_loss": losses[:, 1],
             "stats": [["wins", "losses", "draws"], [total_wins, total_losses, max_episodes-(total_wins+total_losses)]]}
 
 
 if __name__ == "__main__":
 
-    info_dict = train("Hockey")
-    plots = Plots(DIR)
-    plots.save_results(info_dict)
-    plots.plot_losses(info_dict["actor_loss"], title=f'actor_loss')
-    plots.plot_losses(info_dict["critic_loss"], title=f'critic_loss')
-    plots.plot_reward(info_dict["reward"], title=f'reward')
+    train_result = train("Hockey")
+    plots_train = Plots(DIR+"/results/train_results/")
+    plots_train.save_results(train_result)
+    plots_train.plot_losses(train_result["actor_loss"], title=f'train_actor_loss')
+    plots_train.plot_losses(train_result["critic_loss"], title=f'train_critic_loss')
+    plots_train.plot_reward(train_result["reward"], title=f'train_reward')
+
+    eval = Evaluater(step_size = 200)
+    eval_result = eval.evaluate_one_model(10, "test_Hockey_actor_m0_h-size128_e10.pth", 128, 0)
+
+    plots_eval = Plots(DIR+"/results/eval_results/")
+    plots_eval.save_results(eval_result)
+    plots_eval.plot_reward(eval_result["eval_reward"], title=f'eval_reward')

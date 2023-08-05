@@ -4,7 +4,7 @@ from datetime import datetime
 
 class Plots():
     def __init__(self, path):
-        self.path = path + "/results/"
+        self.path = path
         self.timestamp = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
 
     def save_results(self, result_dict):
