@@ -102,7 +102,7 @@ if __name__ == '__main__':
 
             ns, r, d, _, info = env.step(np.hstack([a1, a2]))
 
-            reward = r + 10 * info['reward_closeness_to_puck'] + 10 * info['reward_puck_direction']
+            reward = r #+ 10 * info['reward_closeness_to_puck'] + 10 * info['reward_puck_direction']
             episode_rewards.append(reward)
             episode_win.append(1 if info['winner'] == 1 else 0)
             episode_lose.append(1 if env.winner == -1 else 0)

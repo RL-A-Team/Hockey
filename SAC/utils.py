@@ -24,7 +24,7 @@ def evaluation_plot(values, title, running_mean):
     ax.set_title(title)
 
 
-def longest(lists: list[list]):
+def longest(lists):
     max = 0
     for list in lists:
         if len(list) > max:
@@ -33,7 +33,7 @@ def longest(lists: list[list]):
     return max
 
 
-def fill_nan(lists: list[list]):
+def fill_nan(lists):
     desired_length = longest(lists)
 
     for i, list in enumerate(lists):
