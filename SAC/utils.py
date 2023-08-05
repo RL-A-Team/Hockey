@@ -138,9 +138,9 @@ def save_evaluation_results(critic1_losses, critic2_losses,
     print('')
     print('--------------------------------------')
     print('COPY COMMANDS')
-    print(f'scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/{s_filename}.csv .')
-    print(f'scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/{p_filename}.pdf .')
-    print(f'scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/models/{m_filename} .')
+    print(f'scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/{s_filename}.csv .')
+    print(f'scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/{p_filename}.pdf .')
+    print(f'scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/{m_filename} .')
     print('--------------------------------------')
 
 
