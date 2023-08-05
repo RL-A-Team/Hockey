@@ -4,7 +4,6 @@ import torch.optim as optim
 import torch.nn.functional as F
 import numpy as np
 from torch.distributions import Normal
-import random
 
 
 class Actor(nn.Module):
