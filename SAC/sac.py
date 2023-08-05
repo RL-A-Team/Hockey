@@ -185,7 +185,7 @@ class SACAgent:
         # Based on https://docs.cleanrl.dev/rl-algorithms/sac/#implementation-details
         self.autotune = autotune
         if self.autotune:
-            self.target_entropy = -torch.Tensor(n_actions).item()
+            self.target_entropy = -torch.Tensor(n_actions)
             self.log_alpha = torch.zeros(1, requires_grad=True)
             self.alpha = self.log_alpha.exp().item()
             self.alpha_optimizer = optim.Adam([self.log_alpha], lr=self.lr)
