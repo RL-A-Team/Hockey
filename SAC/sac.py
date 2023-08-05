@@ -20,15 +20,15 @@ class Actor(nn.Module):
         self.linear1 = nn.Linear(state_dim[0], hidden_dim[0])
         self.linear2 = nn.Linear(hidden_dim[0], hidden_dim[1])
 
-        self.mu_linear = nn.Linear(hidden_dim[1], n_actions)
-        self.log_sigma_linear = nn.Linear(hidden_dim[1], n_actions)
+        self.mean_linear = nn.Linear(hidden_dim[1], n_actions)
+        self.log_std_linear = nn.Linear(hidden_dim[1], n_actions)
 
     def forward(self, state):
         x = F.relu(self.linear1(state))
         x = F.relu(self.linear2(x))
 
-        mu = self.mu_linear(x)
-        log_sigma = self.log_sigma_linear(x)
+        mu = self.mean_linear(x)
+        log_sigma = self.log_std_linear(x)
 
         return mu, log_sigma
 
