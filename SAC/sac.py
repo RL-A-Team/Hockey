@@ -36,7 +36,7 @@ class Actor(nn.Module):
         mu, log_sigma = self.forward(state)
         std = log_sigma.exp()
 
-        assert not (torch.isnan(mu) or torch.isnan(std))
+        assert not (torch.isnan(mu).any() or torch.isnan(std).any())
         normal = Normal(mu, std)
 
         # reparameterization trick
