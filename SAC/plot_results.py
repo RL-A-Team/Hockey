@@ -19,7 +19,7 @@ if __name__ == '__main__':
 
         kpi_files = [y for x in os.walk(dir) for y in glob(os.path.join(x[0], '*.csv'))]
         print(dir)
-        print(kpi_files)
+        print(len(kpi_files))
         kpis = pd.read_csv(kpi_files[0])
         for file in kpi_files[1:]:
             kpis.append(pd.read_csv(file))
@@ -30,7 +30,9 @@ if __name__ == '__main__':
         eval_percent_lose = eval_percent_lose[~np.isnan(eval_percent_lose)]
 
         ax.plot(eval_percent_win, label=alpha)
+        #ax.scatter(eval_percent_win, label=alpha)
         #ax.plot(eval_percent_lose, label=alpha)
+        #ax.scatter(eval_percent_lose, label=alpha)
 
     ax.set_ylim([0,1])
     ax.legend()
