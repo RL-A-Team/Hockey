@@ -10,11 +10,12 @@ if __name__ == '__main__':
                              'eval/standard_reward/02_alpha_02',
                              'eval/standard_reward/03_alpha_04',
                              'eval/standard_reward/04_alpha_06',
-                             'eval/standard_reward/05_alpha_08']
+                             'eval/standard_reward/05_alpha_08',
+                             'eval/standard_reward/06_autotun_prb']
 
     fig, ax = plt.subplots()
 
-    for i, alpha in enumerate(['autotune', 0.2, 0.4, 0.6, 0.8]):
+    for i, alpha in enumerate(['autotune', 0.2, 0.4, 0.6, 0.8, 'PRB']):
         dir = different_alphas_dirs[i]
 
         kpi_files = [y for x in os.walk(dir) for y in glob(os.path.join(x[0], '*.csv'))]
