@@ -254,7 +254,11 @@ class SACAgent:
             self.critic_1(s, new_actions),
             self.critic_2(s, new_actions)
         )
+
+        print('alpha', self.alpha)
         actor_loss = (self.alpha * log_prob - q_new_actions).mean()
+        print('actor_loss', actor_loss)
+        print('')
         self.actor_optimizer.zero_grad()
         actor_loss.backward()
         self.actor_optimizer.step()
