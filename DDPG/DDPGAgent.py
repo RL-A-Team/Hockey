@@ -1,12 +1,13 @@
 import torch
 import torch.optim as optim
+import torch.nn as nn
 import numpy as np
 from models import Actor, Critic
-from memory import ReplayBuffer
+from ReplayBuffer import ReplayBuffer
 
 # DDPG Agent
 class DDPGAgent:
-    def __init__(self, state_dim, action_dim, hidden_size_actor=64, hidden_size_critic=64, buffer_size=64):
+    def __init__(self, state_dim, action_dim, hidden_size_actor, hidden_size_critic, buffer_size=100000):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.actor = Actor(state_dim, action_dim, hidden_size_actor).to(self.device)
         self.actor_target = Actor(state_dim, action_dim, hidden_size_actor).to(self.device)
@@ -21,10 +22,10 @@ class DDPGAgent:
         self.replay_buffer = ReplayBuffer(buffer_size=buffer_size)
         self.loss_fn = nn.MSELoss()
 
-    def load_mode(self, path):
+    def load_model(self, path):
         self.actor.load_state_dict(torch.load(path, map_location=self.device))
 
-    def get_action(self, state, epsilon, obs_noice = 0.1, evaluate=False, action_space = None):
+    def get_action(self, state, epsilon, obs_noice=0.1, evaluate=False, action_space=None):
         self.actor.eval()
         state = torch.FloatTensor(state).to(self.device)
         if (np.random.random() < epsilon and not evaluate):
@@ -36,7 +37,6 @@ class DDPGAgent:
 
     def store_experience(self, state, action, next_state, reward, done):
         self.replay_buffer.add(state, action, next_state, reward, done)
-
 
     def train(self, batch_size, gamma=0.99, tau=0.001):
         self.actor.train()
