@@ -83,6 +83,8 @@ if __name__ == '__main__':
     stats_lose = []
     mean_win = []
     mean_lose = []
+    eval_percent_win = []
+    eval_percent_lose = []
 
     for episode in range(opts.episodes):
         state, info = env.reset()
@@ -130,12 +132,49 @@ if __name__ == '__main__':
         stats_win.append(1 if env.winner == 1 else 0)
         stats_lose.append(1 if env.winner == -1 else 0)
 
+        # evaluate every 500 episodes
+        if episode % 500 == 0:
+            agent.set_deterministic(True)
+
+            eval_win = []
+            eval_lose = []
+
+            for eval_step in range(25):
+                state, info = env.reset()
+                obs_agent2 = env.obs_agent_two()
+
+                opponent = h_env.BasicOpponent(weak=True)
+
+                for t in range(500):
+                    a1 = agent.select_action(state).detach().numpy()[0]
+                    a2 = opponent.act(obs_agent2)
+
+                    ns, r, d, _, info = env.step(np.hstack([a1, a2]))
+
+                    state = ns
+                    obs_agent2 = env.obs_agent_two()
+
+                    if render:
+                        time.sleep(0.01)
+                        env.render()
+
+                    if d:
+                        eval_win.append(1 if env.winner == 1 else 0)
+                        eval_lose.append(1 if env.winner == -1 else 0)
+                        break
+
+            eval_percent_win.append(eval_win.count(1)/len(eval_win))
+            eval_percent_lose.append(eval_lose.count(1) / len(eval_lose))
+            agent.set_deterministic(False)
+
+
+
         # print(f'Episode {episode+1}: Winner {env.winner}')
 
     env.close()
 
     utils.save_evaluation_results(critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose,
-                                  mean_rewards, mean_win, mean_lose, agent, False)
+                                  mean_rewards, mean_win, mean_lose, eval_percent_win, eval_percent_lose, agent, False)
 
     # print the execution time
     et = time.time()

@@ -62,18 +62,23 @@ def plot_wins_loses(stats_win, stats_lose):
     ax.legend()
 
 
-def save_statistics(critic1_losses, critic2_losses,
-                    actor_losses, alpha_losses, stats_win, stats_lose,
-                    filename):
-    critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose = \
-        fill_nan([critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose])
+def save_statistics(critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose, mean_rewards,
+                    mean_win, mean_lose, eval_percent_win, eval_percent_lose, filename):
+    critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose, mean_rewards, mean_win, mean_lose, eval_percent_win, eval_percent_lose = \
+        fill_nan([critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose, mean_rewards,
+                  mean_win, mean_lose, eval_percent_win, eval_percent_lose])
 
     stats = pd.DataFrame({'critic1_losses': critic1_losses,
                           'critic2_losses': critic2_losses,
                           'actor_losses': actor_losses,
                           'alpha_losses': alpha_losses,
                           'stats_win': stats_win,
-                          'stats_lose': stats_lose})
+                          'stats_lose': stats_lose,
+                          'mean_rewards': mean_rewards,
+                          'mean_win': mean_win,
+                          'mean_lose': mean_lose,
+                          'eval_percent_win': eval_percent_win,
+                          'eval_percent_lose': eval_percent_lose})
     stats.to_csv(f'{filename}.csv', index=False)
     print(f"Statistics saved in file {filename}.csv")
 
@@ -102,6 +107,7 @@ def plot_percentages(stats_win, stats_lose):
 
 def save_evaluation_results(critic1_losses, critic2_losses,
                             actor_losses, alpha_losses, stats_win, stats_lose, mean_rewards, mean_win, mean_lose,
+                            eval_percent_win, eval_percent_lose,
                             model: SACAgent, running_mean=True):
     plot_actor_critic_losses(critic1_losses, critic2_losses, actor_losses, alpha_losses, running_mean)
     evaluation_plot(mean_rewards, "Mean reward per episode", True)
@@ -110,10 +116,17 @@ def save_evaluation_results(critic1_losses, critic2_losses,
     plot_wins_loses(stats_win, stats_lose)
     plot_percentages(stats_win, stats_lose)
 
+    fig, ax = plt.subplots()
+    ax.plot(eval_percent_win, color='green')
+    ax.plot(eval_percent_lose, color='red')
+    ax.set_ylim([0,1])
+    ax.set_title('Evaluation results')
+
     dt_now = datetime.now().strftime("%Y%m%dT%H%M%S")
 
     s_filename = f'eval/sac_stats_{dt_now}'
-    save_statistics(critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose, s_filename)
+    save_statistics(critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose, mean_rewards,
+                    mean_win, mean_lose, eval_percent_win, eval_percent_lose, s_filename)
 
     p_filename = f'eval/sac_plots_{dt_now}'
     save_multi_image(p_filename)
@@ -125,9 +138,9 @@ def save_evaluation_results(critic1_losses, critic2_losses,
     print('')
     print('--------------------------------------')
     print('COPY COMMANDS')
-    print(f'scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_stats_20230803T184342.csv .')
-    print(f'scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_plots_20230803T184342.pdf .')
-    print(f'scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/models/sac_model_20230803T184342.pkl .')
+    print(f'scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/{s_filename}.csv .')
+    print(f'scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/{p_filename}.pdf .')
+    print(f'scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/models/{m_filename} .')
     print('--------------------------------------')
 
 

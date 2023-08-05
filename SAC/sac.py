@@ -191,6 +191,8 @@ class SACAgent:
         else:
             self.alpha = alpha
 
+    def set_deterministic(self, deterministic_action):
+        self.deterministic_action = deterministic_action
 
     def select_action(self, state):
         state = torch.FloatTensor(state).unsqueeze(0)
