@@ -185,7 +185,7 @@ class SACAgent:
         # Based on https://docs.cleanrl.dev/rl-algorithms/sac/#implementation-details
         self.autotune = autotune
         if self.autotune:
-            self.target_entropy = -torch.prod(torch.Tensor(n_actions)).item()
+            self.target_entropy = -torch.Tensor(n_actions).item()
             self.log_alpha = torch.zeros(1, requires_grad=True)
             self.alpha = self.log_alpha.exp().item()
             self.alpha_optimizer = optim.Adam([self.log_alpha], lr=self.lr)
@@ -255,24 +255,16 @@ class SACAgent:
             self.critic_2(s, new_actions)
         )
 
-        print('alpha', self.alpha)
         actor_loss = (self.alpha * log_prob - q_new_actions).mean()
-        print('actor_loss', actor_loss)
         self.actor_optimizer.zero_grad()
         actor_loss.backward()
         self.actor_optimizer.step()
 
         if self.autotune:
             alpha_loss = (-self.log_alpha * (log_prob + self.target_entropy).detach()).mean()
-            print('log_alpha', self.log_alpha.item())
-            print('log_prob', log_prob)
-            print('self.target_entropy', self.target_entropy)
-            print('alpha_loss', alpha_loss)
             self.alpha_optimizer.zero_grad()
             alpha_loss.backward()
             self.alpha_optimizer.step()
-            print('log_alpha', self.log_alpha.item())
-            print('')
             self.alpha = self.log_alpha.exp().item()
         else:
             alpha_loss = torch.tensor(0.)
