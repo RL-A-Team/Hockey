@@ -11,19 +11,20 @@ weak_opponent = True
 game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_DEFENSE
 #game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_SHOOTING
 #game_mode = h_env.HockeyEnv_BasicOpponent.NORMAL
-episodes = 100
+episodes = 300
 use_checkpoint = False
 visualize = False
 
-subtasks = 8
+subtasks = 17
 
 ##########
-current_subtask = 0
+current_subtask = 8
 ##########
 
 factors = []
 
 fac_rewards = []
+fac_wins = []
 
 for a in range(1, 6):
     for b in range(1, 6):
@@ -75,10 +76,12 @@ for factor in factors:
         grad_updates = 0
         new_op_grad = []
 
+        total_wins = 0
         total_reward = 0
+        
 
     # main training loop
-        while episode_counter <= episodes:
+        while episode_counter < episodes:
             # reset environment, get initial state
             state, info = env.reset()
             obs_agent2 = env.obs_agent_two()
@@ -104,12 +107,11 @@ for factor in factors:
                     touch_puck = info['reward_touch_puck']
                     puck_direction = info['reward_puck_direction']*100
                     
-                    step_discount = 100/(step+1)        
-                    reward = factor[0]*winner + factor[1]*step_discount*closeness_puck + factor[2]*step_discount*touch_puck + factor[3]*puck_direction
-                    reward = step_discount * reward
+                    reward = factor[0]*winner + factor[1]*closeness_puck + factor[2]*touch_puck + factor[3]*puck_direction
                     
                     # sum up total reward of episodes
-                    total_reward += winner
+                    total_wins += winner
+                    total_reward += reward
 
                     agent.store_transition((state, a1, reward, obs, done))
 
@@ -144,14 +146,25 @@ for factor in factors:
         print(f'Reward per round {total_reward/episodes}')
         
         fac_rewards.append(total_reward)
+        fac_wins.append(winner)
 
-# factor winner
+# factor winner for max reward
 max_rew = max(fac_rewards)
 max_rew_index = fac_rewards.index(max_rew)
 print()
-print('BEST RESULT OF SUBTASK ' + str(current_subtask) + ': ')
+print('BEST REWARD RESULT OF SUBTASK ' + str(current_subtask) + ': ')
 print('max_rew: ' + str(max_rew))
+print('wins: ' + str(fac_wins[max_rew_index]))
 print('best factors: ' + str(factors[max_rew_index]))
+
+# factor winner for max wins
+max_win = max(fac_wins)
+max_win_index = fac_wins.index(max_win)
+print()
+print('BEST WINNER RESULT OF SUBTASK ' + str(current_subtask) + ': ')
+print('reward: ' + str(fac_rewards[max_win_index]))
+print('max_win: ' + str(max_win))
+print('best factors: ' + str(factors[max_win_index]))
 
 print()
 end_time = time.time()

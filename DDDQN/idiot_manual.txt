@@ -9,3 +9,15 @@ squeue --me
 
 errors und output:
 ~/Hockey/logs/job_<job_id>.[err | out]
+
+625 factors
+47 seconds per factor
+900 seconds available
+-> 20 factors per subtask
+-> 32 subtasks
+
+858802 ...
+
+0,1,2,3,4,5,6,7
+
+

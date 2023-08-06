@@ -4,17 +4,19 @@ from laserhockey import hockey_env as h_env
 from dddqn import DDDQNAgent
 
 import time
+import matplotlib.pyplot as plt
+
 
 # parameters for manual configuration
 weak_opponent = True
 game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_DEFENSE
 #game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_SHOOTING
 #game_mode = h_env.HockeyEnv_BasicOpponent.NORMAL
-episodes = 100
+episodes = 1000
 use_checkpoint = True
 visualize = False
 
-factor = [1,4,5,5]
+factor = [5, 3, 2, 4]
 
 if __name__ == '__main__':
     # game modi: TRAIN_DEFENSE, TRAIN_SHOOTING, NORMAL
@@ -35,10 +37,11 @@ if __name__ == '__main__':
     grad_updates = 0
     new_op_grad = []
 
+    total_wins = 0
     total_reward = 0
 
 # main training loop
-    while episode_counter <= episodes:
+    while episode_counter < episodes:
         # reset environment, get initial state
         state, info = env.reset()
         obs_agent2 = env.obs_agent_two()
@@ -47,6 +50,7 @@ if __name__ == '__main__':
         opponent = h_env.BasicOpponent(weak=weak_opponent)
 
         done = False
+        episode_reward = 0
 
         for step in range(1000):
             if (not done):
@@ -64,12 +68,11 @@ if __name__ == '__main__':
                 touch_puck = info['reward_touch_puck']
                 puck_direction = info['reward_puck_direction']*100
                 
-                step_discount = 100/(step+1)        
-                reward = factor[0]*winner + factor[1]*step_discount*closeness_puck + factor[2]*step_discount*touch_puck + factor[3]*puck_direction
-                reward = step_discount * reward
+                reward = factor[0]*winner + factor[1]*closeness_puck + factor[2]*touch_puck + factor[3]*puck_direction
 
                 # sum up total reward of episodes
-                total_reward += winner
+                total_wins += winner
+                total_reward += reward
 
                 agent.store_transition((state, a1, reward, obs, done))
 
@@ -100,10 +103,9 @@ if __name__ == '__main__':
 
     # close environment
     env.close()
+    print(f'Total wins {total_wins}')
+    print(f'Wins per round {total_wins/episodes}')
     print(f'Total reward {total_reward}')
     print(f'Reward per round {total_reward/episodes}')
 
     
-    
-
-
