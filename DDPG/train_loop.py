@@ -107,15 +107,15 @@ def train(env_name):
             losses[episode-1] = [0 , 0, episode_reward]
 
         if (episode % milestone == 0):
-            torch.save(agent.actor.state_dict(), f"{MODEL_DIR}+{RESULT_LOCATION}/{NAME}_{env_name}_actor_m{mode}_h-size{opts.hidden_size_actor}_e{episode}.pth")
-            torch.save(agent.actor.state_dict(), f"{MODEL_DIR}+{RESULT_LOCATION}/{NAME}_{env_name}_critic_m{mode}_h-size{opts.hidden_size_critic}-e{episode}.pth")
+            torch.save(agent.actor.state_dict(), f"{MODEL_DIR}{RESULT_LOCATION}/{NAME}_{env_name}_actor_m{mode}_h-size{opts.hidden_size_actor}_e{episode}.pth")
+            torch.save(agent.actor.state_dict(), f"{MODEL_DIR}{RESULT_LOCATION}/{NAME}_{env_name}_critic_m{mode}_h-size{opts.hidden_size_critic}-e{episode}.pth")
     return {"reward": losses[:, 2], "actor_loss": losses[:, 0], "critic_loss": losses[:, 1],
             "stats": [["wins", "losses", "draws"], [total_wins, total_losses, max_episodes-(total_wins+total_losses)]]}
 
 if __name__ == "__main__":
 
     train_result = train("Hockey")
-    plots_train = Plots(DIR+"/results/train_results/")
+    plots_train = Plots(DIR+"/results/train_results")
     plots_train.save_results(train_result)
     plots_train.plot_losses(train_result["actor_loss"], title=f'train_actor_loss')
     plots_train.plot_losses(train_result["critic_loss"], title=f'train_critic_loss')
@@ -124,7 +124,7 @@ if __name__ == "__main__":
     eval = Evaluater(step_size = 200, visualize = opts.render)
     eval_result = eval.evaluate_one_model(10, "test_Hockey_actor_m0_h-size128_e10.pth", opts.hidden_size_actor, opts.mode)
 
-    plots_eval = Plots(DIR+"/results/eval_results/")
+    plots_eval = Plots(DIR+"/results/eval_results")
     plots_eval.save_results(eval_result)
     plots_eval.plot_reward(eval_result["eval_reward"], title=f'eval_reward')
 
