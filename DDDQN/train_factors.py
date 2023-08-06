@@ -7,6 +7,11 @@ import time
 import sys
 
 # parameters for manual configuration
+
+##########
+current_subtask = 0
+##########
+
 weak_opponent = True
 game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_DEFENSE
 #game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_SHOOTING
@@ -16,10 +21,6 @@ use_checkpoint = False
 visualize = False
 
 subtasks = 17
-
-##########
-current_subtask = 8
-##########
 
 factors = []
 
