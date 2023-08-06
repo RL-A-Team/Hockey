@@ -4,7 +4,6 @@ import torch.optim as optim
 import torch.nn.functional as F
 import numpy as np
 from torch.distributions import Normal
-import random
 
 
 class Actor(nn.Module):
@@ -28,26 +27,29 @@ class Actor(nn.Module):
         x = F.relu(self.linear1(state))
         x = F.relu(self.linear2(x))
 
-        mean = self.mean_linear(x)
-        log_std = self.log_std_linear(x)
+        mu = self.mean_linear(x)
+        log_sigma = self.log_std_linear(x)
 
-        return mean, log_std
+        return mu, log_sigma
 
     def sample(self, state):
-        mean, log_std = self.forward(state)
-        std = log_std.exp()
-        normal = Normal(mean, std)
+        mu, log_sigma = self.forward(state)
+        std = log_sigma.exp()
+
+        assert not (torch.isnan(mu).any() or torch.isnan(std).any())
+        normal = Normal(mu, std)
 
         # reparameterization trick
-        x_t = normal.rsample()
-        y_t = torch.tanh(x_t)
-        action = y_t * self.action_scale + self.action_bias
-        log_prob = normal.log_prob(x_t)
+        x = normal.rsample()
+        y = torch.tanh(x)
+        action = y * self.action_scale + self.action_bias
+        log_prob = normal.log_prob(x)
 
-        log_prob -= torch.log(self.action_scale * (1 - y_t.pow(2)) + self.epsilon)
+        log_prob -= torch.log(self.action_scale * (1 - y.pow(2)) + self.epsilon)
         log_prob = log_prob.sum(axis=1, keepdim=True)
+        mu = torch.tanh(mu) * self.action_scale + self.action_bias
 
-        return action, log_prob
+        return action, log_prob, mu
 
 
 class Critic(nn.Module):
@@ -86,6 +88,7 @@ class ReplayBuffer:
     def sample(self, batch=1):
         if batch > self.size:
             batch = self.size
+
         self.inds = np.random.choice(range(self.size), size=batch, replace=False)
         return self.transitions[self.inds,:]
 
@@ -93,10 +96,56 @@ class ReplayBuffer:
         return self.transitions[0:self.size]
 
 
+class PrioritizedReplayBuffer(ReplayBuffer):
+    def __init__(self, alpha=0.6, beta=0.4, beta_annealing=0.0001, **kwargs):
+        super(PrioritizedReplayBuffer, self).__init__(**kwargs)
+
+        self.priorities = np.zeros((self.max_size,), dtype=np.float32)
+        self.alpha = alpha
+        self.beta_0 = beta
+        self.beta_annealing = beta_annealing
+
+    def add_transition(self, transitions_new):
+        if self.size == 0:
+            blank_buffer = [np.asarray(transitions_new, dtype=object)] * self.max_size
+            self.transitions = np.asarray(blank_buffer)
+            max_prio = 1e-5
+        else:
+            max_prio = self.priorities.max()
+
+        self.transitions[self.current_idx, :] = np.asarray(transitions_new, dtype=object)
+        self.priorities[self.current_idx] = max_prio
+        self.size = min(self.size + 1, self.max_size)
+        self.current_idx = (self.current_idx + 1) % self.max_size
+
+    def sample(self, batch=1):
+        if batch > self.size:
+            batch = self.size
+
+        probabilities = self.priorities[:self.size] ** self.alpha
+        P = probabilities/probabilities.sum()
+
+        self.inds = np.random.choice(range(self.size), batch, p=P)
+
+        # beta annealing
+        beta = min(1, self.beta_0 + (1. - self.beta_0) * self.beta_annealing)
+
+        weights = (self.size * P[self.inds]) ** (-beta)
+        weights = np.array(weights / weights.max())
+
+        return self.transitions[self.inds, :], self.inds, weights
+
+    def update_priorities(self, indices, new_priorities):
+        self.priorities[indices] = new_priorities
+
+    def get_all_transitions(self):
+        return self.transitions[0:self.size]
+
 # Define the soft actor-critic agent
 class SACAgent:
     def __init__(self, state_dim, action_dim, n_actions=4, hidden_dim=[300,200], alpha=0.2, tau=5e-3, lr=1e-3,
-                 discount=0.99, batch_size=256, autotune=False):
+                 discount=0.99, batch_size=256, autotune=False, loss='l1', deterministic_action=False,
+                 prio_replay_buffer = False):
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.n_actions = n_actions
@@ -105,8 +154,13 @@ class SACAgent:
         self.lr = lr
         self.discount = discount
         self.batch_size = batch_size
+        self.deterministic_action = deterministic_action
+        self.prio_replay_buffer = prio_replay_buffer
 
-        self.replay_buffer = ReplayBuffer()
+        if self.prio_replay_buffer:
+            self.replay_buffer = PrioritizedReplayBuffer()
+        else:
+            self.replay_buffer = ReplayBuffer()
 
         self.actor = Actor(self.state_dim, self.action_dim, self.n_actions, self.hidden_dim)
         self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=self.lr)
@@ -121,26 +175,41 @@ class SACAgent:
         self.critic_target_2.load_state_dict(self.critic_2.state_dict())
         self.critic_optimizer_2 = optim.Adam(self.critic_2.parameters(), lr=self.lr)
 
-        self.critic_loss = nn.SmoothL1Loss()
+        if loss == 'l1':
+            self.critic_loss = nn.SmoothL1Loss()
+        elif loss == 'l2':
+            self.critic_loss = nn.MSELoss()
+        else:
+            raise ValueError(f'Loss {loss} not defined! Please define loss either as l1 or l2')
 
         # Based on https://docs.cleanrl.dev/rl-algorithms/sac/#implementation-details
         self.autotune = autotune
         if self.autotune:
-            self.target_entropy = -torch.prod(torch.Tensor(n_actions)).item()
+            self.target_entropy = -torch.Tensor(n_actions)
             self.log_alpha = torch.zeros(1, requires_grad=True)
             self.alpha = self.log_alpha.exp().item()
             self.alpha_optimizer = optim.Adam([self.log_alpha], lr=self.lr)
         else:
             self.alpha = alpha
 
+    def set_deterministic(self, deterministic_action):
+        self.deterministic_action = deterministic_action
+
     def select_action(self, state):
         state = torch.FloatTensor(state).unsqueeze(0)
-        action, lr = self.actor.sample(state)
+
+        action, log_sigma, mu = self.actor.sample(state)
+        if self.deterministic_action:
+            action = mu
+
         return action
 
     def update(self):
-
-        transitions = self.replay_buffer.sample(batch=self.batch_size)
+        if self.prio_replay_buffer:
+            transitions, inds, weights = self.replay_buffer.sample(batch=self.batch_size)
+            weights = torch.FloatTensor(weights).unsqueeze(1)
+        else:
+            transitions = self.replay_buffer.sample(batch=self.batch_size)
         s = torch.FloatTensor(np.stack(transitions[:, 0]))
         a = torch.FloatTensor(np.stack(transitions[:, 1])[:, None]).squeeze(dim=1)
         r = torch.FloatTensor(np.stack(transitions[:, 2])[:, None])
@@ -148,7 +217,7 @@ class SACAgent:
         n = torch.FloatTensor(np.stack(transitions[:, 4])[:, None])
 
         with torch.no_grad():
-            next_actions, log_prob = self.actor.sample(sp)
+            next_actions, log_prob, _ = self.actor.sample(sp)
 
             target_q_values = torch.min(
                 self.critic_1(sp, next_actions),
@@ -159,8 +228,19 @@ class SACAgent:
         # Update Critic Networks
         critic1_pred = self.critic_1(s, a)
         critic2_pred = self.critic_2(s, a)
-        critic1_loss = self.critic_loss(critic1_pred, q_target)
-        critic2_loss = self.critic_loss(critic2_pred, q_target)
+
+        if self.prio_replay_buffer:
+            # MSE loss using weighted error
+            td_error1 = q_target - critic1_pred
+            td_error2 = q_target - critic2_pred
+            critic1_loss = 0.5 * (td_error1**2 * weights).mean()
+            critic2_loss = 0.5 * (td_error2**2 * weights).mean()
+            priorities = abs(((td_error1 + td_error2)/2 + 1e-5)).squeeze().detach().numpy()
+            self.replay_buffer.update_priorities(inds, priorities)
+        else:
+            critic1_loss = self.critic_loss(critic1_pred, q_target)
+            critic2_loss = self.critic_loss(critic2_pred, q_target)
+
         self.critic_optimizer_1.zero_grad()
         critic1_loss.backward()
         self.critic_optimizer_1.step()
@@ -169,11 +249,12 @@ class SACAgent:
         self.critic_optimizer_2.step()
 
         # Update Actor Network
-        new_actions, log_prob = self.actor.sample(s)
+        new_actions, log_prob, _ = self.actor.sample(s)
         q_new_actions = torch.min(
             self.critic_1(s, new_actions),
             self.critic_2(s, new_actions)
         )
+
         actor_loss = (self.alpha * log_prob - q_new_actions).mean()
         self.actor_optimizer.zero_grad()
         actor_loss.backward()
@@ -181,7 +262,6 @@ class SACAgent:
 
         if self.autotune:
             alpha_loss = (-self.log_alpha * (log_prob + self.target_entropy).detach()).mean()
-
             self.alpha_optimizer.zero_grad()
             alpha_loss.backward()
             self.alpha_optimizer.step()

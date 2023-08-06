@@ -15,14 +15,18 @@ parser.add_argument('--episodes', type=int, default=10000, help='Number of episo
 parser.add_argument('--steps', type=int, default=500, help='Number of maximal steps per episode')
 parser.add_argument('--mode', type=str, default='d', help='Training mode: d - defense, s - shooting, n - normal')
 parser.add_argument('--model', type=str, default=None, help='Path to pretrained model to load')
+parser.add_argument('--deterministic', action='store_true', help='Choose deterministic action (for evaluation)')
 
 # SAC hyperparameter
 parser.add_argument('--autotune', action='store_true', help='Autotune the entropy value')
+parser.add_argument('--prb', action='store_true', help='Use Prioritized Replay Buffer')
 parser.add_argument('--alpha', type=float, default=0.2, help='Alpha value for the SAC model')
 parser.add_argument('--tau', type=float, default=5e-3, help='Tau value for the SAC model')
 parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate')
 parser.add_argument('--discount', type=float, default=0.99, help='Discount factor')
 parser.add_argument('--batchsize', type=float, default=256, help='Batch size')
+parser.add_argument('--loss', type=str, default='l1', help='Loss of the Critic Network (either l1 or l2)')
+parser.add_argument('--gradientsteps', type=int, default=64, help='Gradient update steps after each rollout')
 
 opts = parser.parse_args()
 
@@ -43,6 +47,9 @@ if __name__ == '__main__':
     print(f'Discount factor: {opts.discount}')
     print(f'Batch size: {opts.batchsize}')
     print(f'Autotune: {opts.autotune}')
+    print(f'Prioritized Replay Buffer: {opts.prb}')
+    print(f'Loss: {opts.loss}')
+    print(f'Gradient steps: {opts.gradientsteps}')
     print('--------------------------------------')
     print('')
 
@@ -64,7 +71,8 @@ if __name__ == '__main__':
     else:
         agent = SACAgent(state_dim=env.observation_space.shape, action_dim=env.action_space, alpha=opts.alpha,
                          tau=opts.tau, lr=opts.lr, discount=opts.discount, batch_size=opts.batchsize,
-                         autotune=opts.autotune)
+                         autotune=opts.autotune, loss=opts.loss, deterministic_action=opts.deterministic,
+                         prio_replay_buffer=opts.prb)
 
     mean_rewards = []
     critic1_losses = []
@@ -75,6 +83,8 @@ if __name__ == '__main__':
     stats_lose = []
     mean_win = []
     mean_lose = []
+    eval_percent_win = []
+    eval_percent_lose = []
 
     for episode in range(opts.episodes):
         state, info = env.reset()
@@ -92,7 +102,7 @@ if __name__ == '__main__':
 
             ns, r, d, _, info = env.step(np.hstack([a1, a2]))
 
-            reward = r + 10 * info['reward_closeness_to_puck'] + 10 * info['reward_puck_direction']
+            reward = r #+ 10 * info['reward_closeness_to_puck'] + 10 * info['reward_puck_direction']
             episode_rewards.append(reward)
             episode_win.append(1 if info['winner'] == 1 else 0)
             episode_lose.append(1 if env.winner == -1 else 0)
@@ -109,11 +119,12 @@ if __name__ == '__main__':
             state = ns
             obs_agent2 = env.obs_agent_two()
 
-        critic1_loss, critic2_loss, actor_loss, alpha_loss = agent.update()
-        critic1_losses.append(critic1_loss)
-        critic2_losses.append(critic2_loss)
-        actor_losses.append(actor_loss)
-        alpha_losses.append(alpha_loss)
+        for step in range(opts.gradientsteps):
+            critic1_loss, critic2_loss, actor_loss, alpha_loss = agent.update()
+            critic1_losses.append(critic1_loss)
+            critic2_losses.append(critic2_loss)
+            actor_losses.append(actor_loss)
+            alpha_losses.append(alpha_loss)
 
         mean_rewards.append(np.array(episode_rewards).mean())
         mean_win.append(np.array(episode_win).mean())
@@ -121,12 +132,49 @@ if __name__ == '__main__':
         stats_win.append(1 if env.winner == 1 else 0)
         stats_lose.append(1 if env.winner == -1 else 0)
 
+        # evaluate every 500 episodes
+        if episode % 500 == 0:
+            agent.set_deterministic(True)
+
+            eval_win = []
+            eval_lose = []
+
+            for eval_step in range(25):
+                state, info = env.reset()
+                obs_agent2 = env.obs_agent_two()
+
+                opponent = h_env.BasicOpponent(weak=True)
+
+                for t in range(500):
+                    a1 = agent.select_action(state).detach().numpy()[0]
+                    a2 = opponent.act(obs_agent2)
+
+                    ns, r, d, _, info = env.step(np.hstack([a1, a2]))
+
+                    state = ns
+                    obs_agent2 = env.obs_agent_two()
+
+                    if render:
+                        time.sleep(0.01)
+                        env.render()
+
+                    if d:
+                        eval_win.append(1 if env.winner == 1 else 0)
+                        eval_lose.append(1 if env.winner == -1 else 0)
+                        break
+
+            eval_percent_win.append(eval_win.count(1)/len(eval_win))
+            eval_percent_lose.append(eval_lose.count(1) / len(eval_lose))
+            agent.set_deterministic(False)
+
+
+
         # print(f'Episode {episode+1}: Winner {env.winner}')
 
     env.close()
 
     utils.save_evaluation_results(critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose,
-                                  mean_rewards, mean_win, mean_lose, agent, False)
+                                  mean_rewards, mean_win, mean_lose, eval_percent_win, eval_percent_lose, agent, False)
 
     # print the execution time
     et = time.time()
