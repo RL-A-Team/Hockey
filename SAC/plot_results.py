@@ -23,7 +23,7 @@ if __name__ == '__main__':
         print(len(kpi_files))
         kpis = pd.read_csv(kpi_files[0])
         for file in kpi_files[1:]:
-            kpis.append(pd.read_csv(file))
+            kpis = kpis.append(pd.read_csv(file))
 
         eval_percent_win = kpis['eval_percent_win'].values
         eval_percent_win = eval_percent_win[~np.isnan(eval_percent_win)]
