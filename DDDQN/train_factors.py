@@ -9,7 +9,7 @@ import sys
 # parameters for manual configuration
 
 ##########
-current_subtask = 16
+current_subtask = 0
 ##########
 
 weak_opponent = True
@@ -147,7 +147,7 @@ for factor in factors:
         print(f'Reward per round {total_reward/episodes}')
         
         fac_rewards.append(total_reward)
-        fac_wins.append(winner)
+        fac_wins.append(total_wins)
 
 # factor winner for max reward
 max_rew = max(fac_rewards)
@@ -155,7 +155,7 @@ max_rew_index = fac_rewards.index(max_rew)
 print()
 print('BEST REWARD RESULT OF SUBTASK ' + str(current_subtask) + ': ')
 print('max_rew: ' + str(max_rew))
-print('wins: ' + str(total_wins))
+print('wins: ' + str(fac_wins[max_rew_index]))
 print('best factors: ' + str(factors[max_rew_index]))
 
 # factor winner for max wins
@@ -164,10 +164,14 @@ max_win_index = fac_wins.index(max_win)
 print()
 print('BEST WINNER RESULT OF SUBTASK ' + str(current_subtask) + ': ')
 print('reward: ' + str(fac_rewards[max_win_index]))
-print('max_win: ' + str(total_wins))
+print('max_win: ' + str(fac_wins[max_win_index]))
 print('best factors: ' + str(factors[max_win_index]))
 
 print()
 end_time = time.time()
 execution_time = end_time - start_time
 print(f"Program execution took {execution_time:.4f} seconds.")
+
+print('copy version:')
+print(str(current_subtask) + '(rew*)  ' + str(fac_wins[max_rew_index]) + '  ' + str(fac_rewards[max_rew_index]) + ' ' + str(factors[max_rew_index]))
+print(str(current_subtask) + '(win*)  ' + str(fac_wins[max_win_index]) + '  ' + str(fac_rewards[max_win_index]) + ' ' + str(factors[max_win_index]))
