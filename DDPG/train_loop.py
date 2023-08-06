@@ -8,13 +8,6 @@ from DDPGAgent import DDPGAgent
 from Parser import opts
 from Evaluater import Evaluater
 
-if len(sys.argv) > 2:
-    NAME = sys.argv[1]
-    RESULT_LOCATION = sys.argv[2]
-else:
-    NAME = "test"
-    RESULT_LOCATION = ""
-
 DIR = os.getcwd()
 MODEL_DIR = os.getcwd() + '/weights/'
 PRINT = True
@@ -35,6 +28,8 @@ def train(env_name):
         agent.load_model(opts.model)
 
     # get information from parser
+    NAME = opts.job_id
+    RESULT_LOCATION = opts.experiment
     max_episodes = opts.max_episodes
     max_steps = opts.max_steps
     epsilon = opts.epsilon
