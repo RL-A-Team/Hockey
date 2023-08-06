@@ -7,11 +7,11 @@ import time
 
 # parameters for manual configuration
 weak_opponent = True
-#game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_DEFENSE
+game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_DEFENSE
 #game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_SHOOTING
-game_mode = h_env.HockeyEnv_BasicOpponent.NORMAL
+#game_mode = h_env.HockeyEnv_BasicOpponent.NORMAL
 episodes = 100
-use_checkpoint = False
+use_checkpoint = True
 visualize = False
 
 factor = [1,4,5,5]
@@ -62,11 +62,12 @@ if __name__ == '__main__':
                 winner = info['winner']
                 closeness_puck = info['reward_closeness_to_puck']
                 touch_puck = info['reward_touch_puck']
-                puck_direction = info['reward_puck_direction']
+                puck_direction = info['reward_puck_direction']*100
                 
-                # +1, because it looks nice and I am happy if the total reward looks good         
-                reward = factor[0]*winner + factor[1]*closeness_puck + factor[2]*touch_puck + factor[3]*puck_direction
-                
+                step_discount = 100/(step+1)        
+                reward = factor[0]*winner + factor[1]*step_discount*closeness_puck + factor[2]*step_discount*touch_puck + factor[3]*puck_direction
+                reward = step_discount * reward
+
                 # sum up total reward of episodes
                 total_reward += winner
 
@@ -101,6 +102,7 @@ if __name__ == '__main__':
     env.close()
     print(f'Total reward {total_reward}')
     print(f'Reward per round {total_reward/episodes}')
+
     
     
 
