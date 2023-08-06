@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 parser = ArgumentParser()
-parser.add_argument('--render', action='store_true', default = False,
+parser.add_argument('--render', type=bool, default = False,
                     help='Render the training process (significantly increases running time)')
 parser.add_argument('--max_episodes', type=int, default=10, help='Number of episodes to train')
 parser.add_argument('--max_steps', type=int, default=250, help='Number of maximal steps per episode')

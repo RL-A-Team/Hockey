@@ -8,10 +8,12 @@ from DDPGAgent import DDPGAgent
 from Parser import opts
 from Evaluater import Evaluater
 
-if len(sys.argv) > 1:
+if len(sys.argv) > 2:
     NAME = sys.argv[1]
+    RESULT_LOCATION = sys.argv[2]
 else:
     NAME = "test"
+    RESULT_LOCATION = ""
 
 DIR = os.getcwd()
 MODEL_DIR = os.getcwd() + '/weights/'
@@ -110,11 +112,10 @@ def train(env_name):
             losses[episode-1] = [0 , 0, episode_reward]
 
         if (episode % milestone == 0):
-            torch.save(agent.actor.state_dict(), f"{MODEL_DIR}{NAME}_{env_name}_actor_m{mode}_h-size{opts.hidden_size_actor}_e{episode}.pth")
-            torch.save(agent.actor.state_dict(), f"{MODEL_DIR}{NAME}_{env_name}_critic_m{mode}_h-size{opts.hidden_size_critic}-e{episode}.pth")
+            torch.save(agent.actor.state_dict(), f"{MODEL_DIR}+{RESULT_LOCATION}/{NAME}_{env_name}_actor_m{mode}_h-size{opts.hidden_size_actor}_e{episode}.pth")
+            torch.save(agent.actor.state_dict(), f"{MODEL_DIR}+{RESULT_LOCATION}/{NAME}_{env_name}_critic_m{mode}_h-size{opts.hidden_size_critic}-e{episode}.pth")
     return {"reward": losses[:, 2], "actor_loss": losses[:, 0], "critic_loss": losses[:, 1],
             "stats": [["wins", "losses", "draws"], [total_wins, total_losses, max_episodes-(total_wins+total_losses)]]}
-
 
 if __name__ == "__main__":
 
@@ -125,9 +126,24 @@ if __name__ == "__main__":
     plots_train.plot_losses(train_result["critic_loss"], title=f'train_critic_loss')
     plots_train.plot_reward(train_result["reward"], title=f'train_reward')
 
-    eval = Evaluater(step_size = 200)
-    eval_result = eval.evaluate_one_model(10, "test_Hockey_actor_m0_h-size128_e10.pth", 128, 0)
+    eval = Evaluater(step_size = 200, visualize = opts.render)
+    eval_result = eval.evaluate_one_model(10, "test_Hockey_actor_m0_h-size128_e10.pth", opts.hidden_size_actor, opts.mode)
 
     plots_eval = Plots(DIR+"/results/eval_results/")
     plots_eval.save_results(eval_result)
     plots_eval.plot_reward(eval_result["eval_reward"], title=f'eval_reward')
+
+
+    print(f'########## Hyperparameter: ####################'
+          f'max_episodes : {opts.max_episodes}'
+          f'mode: {opts.mode}'
+          f'epsilon: {opts.epsilon}'
+          f'epsilon_decay: {opts.epsilon_decay}'
+          f'observation noice: {opts.obs_noice}'
+          f'tau: {opts.tau}'
+          f'gamma: {opts.gamma}'
+          f'lr_actor: {opts.lr_actor}'
+          f'hidden_size_actor: {opts.hidden_size_actor}'
+          f'lr_critic: {opts.lr_critic}'
+          f'hidden_size_critic: {opts.hidden_size_critic}'
+          f'batch_size: {opts.batch_size}')
