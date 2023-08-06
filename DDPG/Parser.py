@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 parser = ArgumentParser()
 ### slurm information
 parser.add_argument('--job_id', default='test', help='slurm job idea')
-parser.add_argument('--experiement', default='', help='type of experiment running')
+parser.add_argument('--experiment', default='', help='type of experiment running')
 
 
 parser.add_argument('--render', type=bool, default = False,
