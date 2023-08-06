@@ -9,7 +9,7 @@ import sys
 # parameters for manual configuration
 
 ##########
-current_subtask = 0
+current_subtask = 16
 ##########
 
 weak_opponent = True
@@ -155,7 +155,7 @@ max_rew_index = fac_rewards.index(max_rew)
 print()
 print('BEST REWARD RESULT OF SUBTASK ' + str(current_subtask) + ': ')
 print('max_rew: ' + str(max_rew))
-print('wins: ' + str(fac_wins[max_rew_index]))
+print('wins: ' + str(total_wins))
 print('best factors: ' + str(factors[max_rew_index]))
 
 # factor winner for max wins
@@ -164,7 +164,7 @@ max_win_index = fac_wins.index(max_win)
 print()
 print('BEST WINNER RESULT OF SUBTASK ' + str(current_subtask) + ': ')
 print('reward: ' + str(fac_rewards[max_win_index]))
-print('max_win: ' + str(max_win))
+print('max_win: ' + str(total_wins))
 print('best factors: ' + str(factors[max_win_index]))
 
 print()
