@@ -20,6 +20,7 @@ visualize = False
 hidden_dim = [300, 300] # number of hidden layers of neural network
 alpha = 0.1             # actor loss weight: higher -> more exploration
 tau = 5e-3              # rate at which target networks are updated using soft updates
+
 learning_rate = 1e-3    # step size in updating the neural network 
 discount = 0.99         # importance of future rewards
 batch_size = 256        # transitions per update step
