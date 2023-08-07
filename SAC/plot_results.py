@@ -73,7 +73,8 @@ if __name__ == '__main__':
     ax.set_ylim([0, 1])
     ax.legend()
 
-    different_alphas_dirs = ['eval/test_rewards/r1',
+    different_alphas_dirs = ['eval/test_rewards/r-1',
+                             'eval/test_rewards/r1',
                              'eval/test_rewards/r2',
                              'eval/test_rewards/r3',
                              'eval/test_rewards/r4',
@@ -81,7 +82,7 @@ if __name__ == '__main__':
 
     fig, ax = plt.subplots()
 
-    for i, alpha in enumerate(['r1', 'r2', 'r3', 'r4', 'r5']):
+    for i, alpha in enumerate(['r-1', 'r1', 'r2', 'r3', 'r4', 'r5']):
         dir = different_alphas_dirs[i]
 
         kpi_files = [y for x in os.walk(dir) for y in glob(os.path.join(x[0], '*.csv'))]

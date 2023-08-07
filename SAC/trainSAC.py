@@ -98,6 +98,7 @@ if __name__ == '__main__':
         episode_win = []
         episode_lose = []
         last_touched_step = None
+        first_touched_step = None
 
         touched = 0
         first_time_touch = 1
@@ -108,21 +109,20 @@ if __name__ == '__main__':
 
             ns, r, d, _, info = env.step(np.hstack([a1, a2]))
 
-            #reward = r
+            # reward = r
             if last_touched_step is not None:
                 last_touched_step += 1
+                first_touched_step += 1
             if info['reward_touch_puck'] == 1:
                 last_touched_step = 0
+                first_touched_step = 0
 
-            if last_touched_step is not None:
+            if last_touched_step is not None and opts.reward in [1, 2, 3, 4, 5, 6]:
                 # negative gompertz
                 decrease_touch = 1 - 0.99 * np.exp(-6 * np.exp(-0.3 * last_touched_step))
-
-                # first reward
-                #reward = r + 4*info["reward_closeness_to_puck"] + 5*decrease_touch + 5*info["reward_puck_direction"]
-
-                # second reward
-                reward = r + 4 * info["reward_closeness_to_puck"] + decrease_touch + 5 * info["reward_puck_direction"]
+            elif first_touched_step is not None and opts.reward in [7]:
+                # negative gompertz
+                decrease_touch = 1 - 0.99 * np.exp(-6 * np.exp(-0.3 * first_touched_step))
             else:
                 decrease_touch = 0
 
@@ -155,6 +155,14 @@ if __name__ == '__main__':
                 # goes directly to middle line
                 reward = r + 4 * info["reward_closeness_to_puck"] + 2.5 * decrease_touch + \
                          5 * info["reward_puck_direction"]
+            elif opts.reward == 6:
+                reward = r + 4 * info["reward_closeness_to_puck"] + 0.5 * decrease_touch
+            elif opts.reward == 7:
+                reward = r + 4 * info["reward_closeness_to_puck"] + decrease_touch
+            elif opts.reward == 8:
+                reward = r + 4 * info["reward_closeness_to_puck"] + 2.5 * decrease_touch
+            elif opts.reward == 9:
+                reward = r + 4 * info["reward_closeness_to_puck"] + 0.5 * decrease_touch
 
             episode_rewards.append(reward)
             episode_win.append(1 if info['winner'] == 1 else 0)
@@ -216,11 +224,9 @@ if __name__ == '__main__':
                         eval_lose.append(1 if env.winner == -1 else 0)
                         break
 
-            eval_percent_win.append(eval_win.count(1)/len(eval_win))
+            eval_percent_win.append(eval_win.count(1) / len(eval_win))
             eval_percent_lose.append(eval_lose.count(1) / len(eval_lose))
             agent.set_deterministic(False)
-
-
 
         # print(f'Episode {episode+1}: Winner {env.winner}')
 
