@@ -10,7 +10,7 @@ tau = 1e-3
 discount = 0.96
 batch_size = 256
 epsilon = 1e-4 
-max_size = 
+max_size = 1000000
 '''
 
 reward_r    = 
