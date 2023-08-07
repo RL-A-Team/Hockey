@@ -122,7 +122,7 @@ def save_evaluation_results(critic1_losses, critic2_losses,
     ax.set_ylim([0,1])
     ax.set_title('Evaluation results')
 
-    dt_now = datetime.now().strftime("%Y%m%dT%H%M%S")
+    dt_now = f'{datetime.now().strftime("%Y%m%dT%H%M%S")}_{np.random.randint(0,100000)}'
 
     s_filename = f'eval/sac_stats_{dt_now}'
     save_statistics(critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose, mean_rewards,
