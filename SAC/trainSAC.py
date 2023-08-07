@@ -1,3 +1,4 @@
+import os
 import pickle
 
 import numpy as np
@@ -17,6 +18,7 @@ parser.add_argument('--mode', type=str, default='d', help='Training mode: d - de
 parser.add_argument('--model', type=str, default=None, help='Path to pretrained model to load')
 parser.add_argument('--deterministic', action='store_true', help='Choose deterministic action (for evaluation)')
 parser.add_argument('--reward', type=int, default=0, help='Code of reward to use')
+parser.add_argument('--randomopponent', action='store_true', help='Use an random agent as opponent')
 
 # SAC hyperparameter
 parser.add_argument('--autotune', action='store_true', help='Autotune the entropy value')
@@ -65,9 +67,9 @@ if __name__ == '__main__':
         raise ValueError(f'Mode {opts.mode} not defined! Please define mode as d - defense, s - shooting or n - normal')
 
     env = h_env.HockeyEnv(mode=mode)
-
     render = opts.render
 
+    # load already trained model if desired, else initialize new agent
     if opts.model is not None:
         agent = pickle.load(open(opts.model, 'rb'))
     else:
@@ -92,7 +94,19 @@ if __name__ == '__main__':
         state, info = env.reset()
         obs_agent2 = env.obs_agent_two()
 
-        opponent = h_env.BasicOpponent(weak=True)
+        # select random opponent if desired, else use basic weak opponent
+        if opts.randomopponent:
+            opponent_dir = 'SAC/opponents'
+            opponents = os.listdir(opponent_dir)
+            choice = np.random.choice(opponents)
+
+            opponent = pickle.load(open(f'{opponent_dir}/{choice}', 'rb'))
+            print('--------------------------------------')
+            print(f'Random chosen opponent: {choice}')
+            print('--------------------------------------')
+            print('')
+        else:
+            opponent = h_env.BasicOpponent(weak=True)
 
         episode_rewards = []
         episode_win = []
@@ -105,9 +119,13 @@ if __name__ == '__main__':
 
         for step in range(opts.steps):
             a1 = agent.select_action(state).detach().numpy()[0]
-            a2 = opponent.act(obs_agent2)
 
-            ns, r, d, _, info = env.step(np.hstack([a1, a2]))
+            if hasattr(opponent, 'act'):
+                a2 = opponent.act(obs_agent2)
+            else:
+                a2 = opponent.select_action(state).detach().numpy()[0]
+
+            next_state, raw_reward, done, _, info = env.step(np.hstack([a1, a2]))
 
             # reward = r
             if last_touched_step is not None:
@@ -118,10 +136,10 @@ if __name__ == '__main__':
                 first_touched_step = 0
 
             if last_touched_step is not None and opts.reward in [1, 2, 3, 4, 5, 6]:
-                # negative gompertz
+                # negative gompertz, use time since last touch
                 decrease_touch = 1 - 0.99 * np.exp(-6 * np.exp(-0.3 * last_touched_step))
-            elif first_touched_step is not None and opts.reward in [7]:
-                # negative gompertz
+            elif first_touched_step is not None and opts.reward in [7, 8, 9]:
+                # negative gompertz, use time since first touch
                 decrease_touch = 1 - 0.99 * np.exp(-6 * np.exp(-0.3 * first_touched_step))
             else:
                 decrease_touch = 0
@@ -130,56 +148,57 @@ if __name__ == '__main__':
                 touched = max(touched, info['reward_touch_puck'])
 
                 reward = (
-                        r
+                        raw_reward
                         + 5 * info['reward_closeness_to_puck']
                         - (1 - touched) * 0.1
                         + touched * first_time_touch * 0.1 * step
                 )
                 first_time_touch = 1 - touched
             elif opts.reward == 0:
-                reward = r
+                reward = raw_reward
             elif opts.reward == 1:
                 # still very close to middle line, but better
-                reward = r + 4 * info["reward_closeness_to_puck"] + 5 * decrease_touch + \
+                reward = raw_reward + 4 * info["reward_closeness_to_puck"] + 5 * decrease_touch + \
                          5 * info["reward_puck_direction"]
             elif opts.reward == 2:
                 # goes directly to middle line
-                reward = r + 4 * info["reward_closeness_to_puck"] + decrease_touch + 5 * info["reward_puck_direction"]
+                reward = raw_reward + 4 * info["reward_closeness_to_puck"] + decrease_touch + 5 * info["reward_puck_direction"]
             elif opts.reward == 3:
                 # goes directly to middle line
-                reward = r + 4 * info["reward_closeness_to_puck"] + decrease_touch + info["reward_puck_direction"]
+                reward = raw_reward + 4 * info["reward_closeness_to_puck"] + decrease_touch + info["reward_puck_direction"]
             elif opts.reward == 4:
                 # sometimes does not even touch the ball (but does not go to middle line)
-                reward = r + 4 * info["reward_closeness_to_puck"] + decrease_touch + 2.5 * info["reward_puck_direction"]
+                reward = raw_reward + 4 * info["reward_closeness_to_puck"] + decrease_touch + 2.5 * info["reward_puck_direction"]
             elif opts.reward == 5:
                 # goes directly to middle line
-                reward = r + 4 * info["reward_closeness_to_puck"] + 2.5 * decrease_touch + \
+                reward = raw_reward + 4 * info["reward_closeness_to_puck"] + 2.5 * decrease_touch + \
                          5 * info["reward_puck_direction"]
             elif opts.reward == 6:
-                reward = r + 4 * info["reward_closeness_to_puck"] + 0.5 * decrease_touch
+                reward = raw_reward + 4 * info["reward_closeness_to_puck"] + 0.5 * decrease_touch
             elif opts.reward == 7:
-                reward = r + 4 * info["reward_closeness_to_puck"] + decrease_touch
+                reward = raw_reward + 4 * info["reward_closeness_to_puck"] + decrease_touch
             elif opts.reward == 8:
-                reward = r + 4 * info["reward_closeness_to_puck"] + 2.5 * decrease_touch
+                reward = raw_reward + 4 * info["reward_closeness_to_puck"] + 2.5 * decrease_touch
             elif opts.reward == 9:
-                reward = r + 4 * info["reward_closeness_to_puck"] + 0.5 * decrease_touch
+                reward = raw_reward + 4 * info["reward_closeness_to_puck"] + 0.5 * decrease_touch
 
             episode_rewards.append(reward)
             episode_win.append(1 if info['winner'] == 1 else 0)
             episode_lose.append(1 if env.winner == -1 else 0)
 
-            agent.store_transition((state, a1, reward, ns, d))
+            agent.store_transition((state, a1, reward, next_state, done))
 
             if render:
                 time.sleep(0.01)
                 env.render()
 
-            if d:
+            if done:
                 break
 
-            state = ns
+            state = next_state
             obs_agent2 = env.obs_agent_two()
 
+        # gradient descent of actor and critic network, track losses
         for step in range(opts.gradientsteps):
             critic1_loss, critic2_loss, actor_loss, alpha_loss = agent.update()
             critic1_losses.append(critic1_loss)
@@ -193,7 +212,7 @@ if __name__ == '__main__':
         stats_win.append(1 if env.winner == 1 else 0)
         stats_lose.append(1 if env.winner == -1 else 0)
 
-        # evaluate every 500 episodes
+        # evaluate every 500 episodes in deterministic mode against basic weak opponent
         if episode % 500 == 0:
             agent.set_deterministic(True)
 
@@ -204,22 +223,24 @@ if __name__ == '__main__':
                 state, info = env.reset()
                 obs_agent2 = env.obs_agent_two()
 
+                # always evaluate against basic weak opponent (for better comparison)
                 opponent = h_env.BasicOpponent(weak=True)
 
                 for t in range(500):
                     a1 = agent.select_action(state).detach().numpy()[0]
+
                     a2 = opponent.act(obs_agent2)
 
-                    ns, r, d, _, info = env.step(np.hstack([a1, a2]))
+                    next_state, raw_reward, done, _, info = env.step(np.hstack([a1, a2]))
 
-                    state = ns
+                    state = next_state
                     obs_agent2 = env.obs_agent_two()
 
                     if render:
                         time.sleep(0.01)
                         env.render()
 
-                    if d:
+                    if done:
                         eval_win.append(1 if env.winner == 1 else 0)
                         eval_lose.append(1 if env.winner == -1 else 0)
                         break
@@ -228,12 +249,11 @@ if __name__ == '__main__':
             eval_percent_lose.append(eval_lose.count(1) / len(eval_lose))
             agent.set_deterministic(False)
 
-        # print(f'Episode {episode+1}: Winner {env.winner}')
-
     env.close()
 
+    # Save all results and generate plots
     utils.save_evaluation_results(critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose,
-                                  mean_rewards, mean_win, mean_lose, eval_percent_win, eval_percent_lose, agent, False)
+                                  mean_rewards, mean_win, mean_lose, eval_percent_win, eval_percent_lose, agent)
 
     # print the execution time
     et = time.time()

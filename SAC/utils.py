@@ -64,7 +64,11 @@ def plot_wins_loses(stats_win, stats_lose):
 
 def save_statistics(critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose, mean_rewards,
                     mean_win, mean_lose, eval_percent_win, eval_percent_lose, filename):
-    critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose, mean_rewards, mean_win, mean_lose, eval_percent_win, eval_percent_lose = \
+    """ Save statistics to :param: filename    """
+
+    # bring all statistics to the same length
+    critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose, mean_rewards, mean_win, \
+    mean_lose, eval_percent_win, eval_percent_lose = \
         fill_nan([critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose, mean_rewards,
                   mean_win, mean_lose, eval_percent_win, eval_percent_lose])
 
@@ -84,6 +88,13 @@ def save_statistics(critic1_losses, critic2_losses, actor_losses, alpha_losses, 
 
 
 def plot_percentages(stats_win, stats_lose):
+    """ Plot win/lose percentage over time
+
+    :param stats_win: list[float]
+        1 if our agent won, 0 else
+    :param stats_lose: list[float]
+        1 if our agent lost, 0 else
+    """
     num_ones = 0
     win_percentages = []
 
@@ -105,29 +116,77 @@ def plot_percentages(stats_win, stats_lose):
     ax.set_title('Percentage of wins and losses')
 
 
+def plot_eval(eval_percent_win, eval_percent_lose):
+    """ Plot the evaluation results
+
+    :param eval_percent_win: list[float]
+        mean number of win in evaluation iteration
+    :param eval_percent_lose: list[float]
+        mean number of lose in evaluation iteration
+    """
+    fig, ax = plt.subplots()
+    ax.plot(eval_percent_win, color='green')
+    ax.plot(eval_percent_lose, color='red')
+    ax.set_ylim([0, 1])
+    ax.set_title('Evaluation results')
+
+
 def save_evaluation_results(critic1_losses, critic2_losses,
                             actor_losses, alpha_losses, stats_win, stats_lose, mean_rewards, mean_win, mean_lose,
                             eval_percent_win, eval_percent_lose,
-                            model: SACAgent, running_mean=True):
-    plot_actor_critic_losses(critic1_losses, critic2_losses, actor_losses, alpha_losses, running_mean)
+                            model: SACAgent):
+    """ Save and plot results.
+
+    :param critic1_losses: list[float]
+        loss values of the critic1 network
+    :param critic2_losses: list[float]
+        loss values of the critic2 network
+    :param actor_losses: list[float]
+        loss values of the actor network
+    :param alpha_losses: list[float]
+        loss values of the alpha network
+    :param stats_win: list[float]
+        1 if our agent won, 0 else
+    :param stats_lose: list[float]
+        1 if our agent lost, 0 else
+    :param mean_rewards: list[float]
+        mean reward in episode
+    :param mean_win: list[float]
+        mean number of win in episode
+    :param mean_lose: list[float]
+        mean number of lose in episode
+    :param eval_percent_win: list[float]
+        mean number of win in evaluation iteration
+    :param eval_percent_lose: list[float]
+        mean number of lose in evaluation iteration
+    :param model: sac.SACAgent
+        trained model
+    :return:
+    """
+    # plot losses
+    plot_actor_critic_losses(critic1_losses, critic2_losses, actor_losses, alpha_losses, False)
+
+    # plot rewards
     evaluation_plot(mean_rewards, "Mean reward per episode", True)
+
+    # plot mean wins and loses
     evaluation_plot(mean_win, "Mean wins per episode", True)
     evaluation_plot(mean_lose, "Mean lose per episode", True)
     plot_wins_loses(stats_win, stats_lose)
     plot_percentages(stats_win, stats_lose)
 
-    fig, ax = plt.subplots()
-    ax.plot(eval_percent_win, color='green')
-    ax.plot(eval_percent_lose, color='red')
-    ax.set_ylim([0,1])
-    ax.set_title('Evaluation results')
+    # plot evaluation results
+    plot_eval(eval_percent_win, eval_percent_lose)
 
-    dt_now = f'{datetime.now().strftime("%Y%m%dT%H%M%S")}_{np.random.randint(0,100000)}'
+    # unique identifier for filenames (timestamp and random integer)
+    dt_now = f'{datetime.now().strftime("%Y%m%dT%H%M%S")}_{np.random.randint(0, 100000)}'
 
+    # save statistics
     s_filename = f'eval/sac_stats_{dt_now}'
     save_statistics(critic1_losses, critic2_losses, actor_losses, alpha_losses, stats_win, stats_lose, mean_rewards,
                     mean_win, mean_lose, eval_percent_win, eval_percent_lose, s_filename)
 
+    # save plots
     p_filename = f'eval/sac_plots_{dt_now}'
     save_multi_image(p_filename)
 
@@ -146,6 +205,9 @@ def save_evaluation_results(critic1_losses, critic2_losses,
 
 def save_multi_image(filename):
     """ Saves all produced figures as pdf in the given filename
+
+        :param filename: str
+            Filename where the plots should be stored
 
         Source:
         https://www.tutorialspoint.com/saving-multiple-figures-to-one-pdf-file-in-matplotlib
