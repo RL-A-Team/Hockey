@@ -1,3 +1,4 @@
+import os
 import pickle
 
 import numpy as np
@@ -17,6 +18,7 @@ parser.add_argument('--mode', type=str, default='d', help='Training mode: d - de
 parser.add_argument('--model', type=str, default=None, help='Path to pretrained model to load')
 parser.add_argument('--deterministic', action='store_true', help='Choose deterministic action (for evaluation)')
 parser.add_argument('--reward', type=int, default=0, help='Code of reward to use')
+parser.add_argument('--randomopponent', action='store_true', help='Use an random agent as opponent')
 
 # SAC hyperparameter
 parser.add_argument('--autotune', action='store_true', help='Autotune the entropy value')
@@ -92,7 +94,13 @@ if __name__ == '__main__':
         state, info = env.reset()
         obs_agent2 = env.obs_agent_two()
 
-        opponent = h_env.BasicOpponent(weak=True)
+        if opts.randomopponent:
+            opponent_dir = 'SAC/opponents'
+            opponents = os.listdir(opponent_dir)
+
+            opponent = pickle.load(open(f'{opponent_dir}/{np.random.choice(opponents)}', 'rb'))
+        else:
+            opponent = h_env.BasicOpponent(weak=True)
 
         episode_rewards = []
         episode_win = []
