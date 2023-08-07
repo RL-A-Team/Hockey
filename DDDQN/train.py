@@ -11,14 +11,14 @@ weak_opponent = True
 #game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_SHOOTING
 game_mode = h_env.HockeyEnv_BasicOpponent.NORMAL
 
-episodes = 2000
+episodes = 4000
 
 load_checkpoint = False
 save_checkpoint = False
 visualize = False
 
-hidden_dim = [100, 100] # number of hidden layers of neural network
-alpha = 0.2             # actor loss weight: higher -> more exploration
+hidden_dim = [300, 300] # number of hidden layers of neural network
+alpha = 0.1             # actor loss weight: higher -> more exploration
 tau = 5e-3              # rate at which target networks are updated using soft updates
 learning_rate = 1e-3    # step size in updating the neural network 
 discount = 0.99         # importance of future rewards
