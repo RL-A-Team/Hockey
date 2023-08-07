@@ -20,7 +20,7 @@ episodes = 100
 use_checkpoint = False
 visualize = False
 
-subtasks = 625
+subtasks = 15
 
 factors = []
 
