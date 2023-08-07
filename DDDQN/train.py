@@ -23,10 +23,9 @@ tau = 5e-3              # rate at which target networks are updated using soft u
 learning_rate = 1e-3    # step size in updating the neural network 
 discount = 0.96         # importance of future rewards
 batch_size = 256        # transitions per update step
+epsilon = 1e-4          # probability of selecting random action instead of policy action
 
-epsilon = 1e-6          # probability of selecting random action instead of policy action
-
-max_size = 100000       # maximum capacity of replay buffer
+max_size = 1000       # maximum capacity of replay buffer
 
 if __name__ == '__main__':
 
