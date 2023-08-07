@@ -81,23 +81,27 @@ if __name__ == '__main__':
         ax.legend()
 
     if f3:
-        different_alphas_dirs = ['eval/test_rewards/r-1/1e-4',
+        different_alphas_dirs = [#'eval/test_rewards/r-1/1e-4',
                                  'eval/test_rewards/r-1/1e-5',
                                  #'eval/test_rewards/r1',
                                  #'eval/test_rewards/r2',
                                  #'eval/test_rewards/r3',
                                  #'eval/test_rewards/r4',
                                  #'eval/test_rewards/r5',
-                                 'eval/test_rewards/r6',
-                                 'eval/test_rewards/r7',
+                                 'eval/test_rewards/r6/1e-4',
+                                 #'eval/test_rewards/r6/1e-5',
+                                 'eval/test_rewards/r7/1e-4',
+                                 #'eval/test_rewards/r7/1e-5',
                                  'eval/test_rewards/r8',
                                  'eval/test_rewards/r9',]
 
         fig, ax = plt.subplots()
 
-        for i, alpha in enumerate(['r-1 1e-4', 'r-1 1e-5',
+        for i, alpha in enumerate(['r-1 1e-4', #'r-1 1e-5',
                                    #'r1', 'r2', 'r3', 'r4', 'r5',
-                                   'r6', 'r7', 'r8', 'r9']):
+                                   'r6 1e-4', #'r6 1e-5',
+                                   'r7 1e-4', #'r7 1e-5',
+                                   'r8', 'r9']):
             dir = different_alphas_dirs[i]
 
             kpi_files = [y for x in os.walk(dir) for y in glob(os.path.join(x[0], '*.csv'))]
