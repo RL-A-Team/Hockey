@@ -102,7 +102,7 @@ class Critic(nn.Module):
         
 # ReplayBuffer (-> store and sample transitions) ---------- ---------- ----------
 class ReplayBuffer:
-    def __init__(self, max_size=100000):
+    def __init__(self, max_size):
         # initialize parameters
         self.transitions = np.asarray([])
         self.size = 0
@@ -134,12 +134,13 @@ class ReplayBuffer:
 
 # DDDQNAgent (-> combine Actor and Critic networks, implement DDDQN algorithm) ---------- ---------- ----------
 class DDDQNAgent:
-    def __init__(self, state_dim, action_dim, n_actions=4, hidden_dim=[300, 200], alpha=0.2, tau=5e-3, lr=1e-3,
-                 discount=0.99, batch_size=256):
+    def __init__(self, state_dim, action_dim, n_actions, hidden_dim, alpha, tau, lr,
+                 discount, batch_size, epsilon, max_size):
         
         # check if GPU is available
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-                                 
+        self.device = "cpu"
+
         # initialize agent parameters, create networks
         self.state_dim = state_dim
         self.action_dim = action_dim
@@ -150,9 +151,11 @@ class DDDQNAgent:
         self.lr = lr
         self.discount = discount
         self.batch_size = batch_size
+        self.epsilon = epsilon
+        self.max_size = max_size
 
         # create replay buffer
-        self.replay_buffer = ReplayBuffer()
+        self.replay_buffer = ReplayBuffer(max_size=self.max_size)
 
         # create the 1 Q-value networks and their target networks (-> soft updates)
         self.critic_1 = Critic(self.state_dim, self.n_actions, self.hidden_dim)
@@ -165,7 +168,7 @@ class DDDQNAgent:
         self.critic_optimizer_2 = optim.Adam(self.critic_2.parameters(), lr=self.lr)
         
         # actor network and optimizer
-        self.actor = Actor(self.state_dim, self.action_dim, self.n_actions, self.hidden_dim)
+        self.actor = Actor(self.state_dim, self.action_dim, self.n_actions, self.hidden_dim, self.epsilon)
         self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=self.lr)
         
         # move all models to GPU
