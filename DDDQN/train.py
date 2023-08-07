@@ -12,11 +12,14 @@ weak_opponent = True
 game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_DEFENSE
 #game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_SHOOTING
 #game_mode = h_env.HockeyEnv_BasicOpponent.NORMAL
-episodes = 1000
-use_checkpoint = True
+episodes = 10
+load_checkpoint = False
+save_checkpoint = False
 visualize = False
 
-factor = [5, 3, 2, 4]
+factor = [5, 2, 5, 1]  # defense
+#factor = [2, 1, 5, 5]   # shooting
+#factor = [3, 3, 3, 1]   # normal
 
 if __name__ == '__main__':
     # game modi: TRAIN_DEFENSE, TRAIN_SHOOTING, NORMAL
@@ -27,7 +30,7 @@ if __name__ == '__main__':
     agent = DDDQNAgent(state_dim=env.observation_space.shape, action_dim=env.action_space)
 
     # load saved agent state from file
-    if (use_checkpoint):
+    if (load_checkpoint):
         checkpoint = torch.load('saved_agent.pth')
         agent.critic_1.load_state_dict(checkpoint['critic_1_state_dict'])
         agent.critic_2.load_state_dict(checkpoint['critic_2_state_dict'])
@@ -93,12 +96,12 @@ if __name__ == '__main__':
 
         print(f'Episode {episode_counter}: Winner {env.winner}')
 
-    
-    # save the agent's two critics to file
-    torch.save({
-    'critic_1_state_dict': agent.critic_1.state_dict(),
-    'critic_2_state_dict': agent.critic_2.state_dict(),
-}, 'saved_agent.pth')
+    if (save_checkpoint):
+        # save the agent's two critics to file
+        torch.save({
+        'critic_1_state_dict': agent.critic_1.state_dict(),
+        'critic_2_state_dict': agent.critic_2.state_dict(),
+        }, 'saved_agent.pth')
     
 
     # close environment
