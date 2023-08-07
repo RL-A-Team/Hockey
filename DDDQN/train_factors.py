@@ -13,14 +13,14 @@ current_subtask = 0
 ##########
 
 weak_opponent = True
-game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_DEFENSE
+#game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_DEFENSE
 #game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_SHOOTING
-#game_mode = h_env.HockeyEnv_BasicOpponent.NORMAL
-episodes = 300
+game_mode = h_env.HockeyEnv_BasicOpponent.NORMAL
+episodes = 100
 use_checkpoint = False
 visualize = False
 
-subtasks = 17
+subtasks = 15
 
 factors = []
 
