@@ -5,9 +5,11 @@ import torch.nn.functional as F
 import numpy as np
 from torch.distributions import Normal
 
+#from SAC.RL2023HockeyTournamentClient.client.remoteControllerInterface import RemoteControllerInterface
+
 
 class Actor(nn.Module):
-    def __init__(self, state_dim, action_dim, n_actions, hidden_dim = [300, 200], epsilon=1e-6):
+    def __init__(self, state_dim, action_dim, n_actions, hidden_dim=[300, 200], epsilon=1e-6):
         super(Actor, self).__init__()
 
         self.action_dim = action_dim
@@ -53,7 +55,7 @@ class Actor(nn.Module):
 
 
 class Critic(nn.Module):
-    def __init__(self, state_dim, n_actions, hidden_dim=[300,200]):
+    def __init__(self, state_dim, n_actions, hidden_dim=[300, 200]):
         super(Critic, self).__init__()
         self.linear1 = nn.Linear(state_dim[0] + n_actions, hidden_dim[0])
         self.linear2 = nn.Linear(hidden_dim[0], hidden_dim[1])
@@ -74,14 +76,14 @@ class ReplayBuffer:
         self.transitions = np.asarray([])
         self.size = 0
         self.current_idx = 0
-        self.max_size=max_size
+        self.max_size = max_size
 
     def add_transition(self, transitions_new):
         if self.size == 0:
             blank_buffer = [np.asarray(transitions_new, dtype=object)] * self.max_size
             self.transitions = np.asarray(blank_buffer)
 
-        self.transitions[self.current_idx,:] = np.asarray(transitions_new, dtype=object)
+        self.transitions[self.current_idx, :] = np.asarray(transitions_new, dtype=object)
         self.size = min(self.size + 1, self.max_size)
         self.current_idx = (self.current_idx + 1) % self.max_size
 
@@ -90,7 +92,7 @@ class ReplayBuffer:
             batch = self.size
 
         self.inds = np.random.choice(range(self.size), size=batch, replace=False)
-        return self.transitions[self.inds,:]
+        return self.transitions[self.inds, :]
 
     def get_all_transitions(self):
         return self.transitions[0:self.size]
@@ -123,7 +125,7 @@ class PrioritizedReplayBuffer(ReplayBuffer):
             batch = self.size
 
         probabilities = self.priorities[:self.size] ** self.alpha
-        P = probabilities/probabilities.sum()
+        P = probabilities / probabilities.sum()
 
         self.inds = np.random.choice(range(self.size), batch, p=P)
 
@@ -141,11 +143,14 @@ class PrioritizedReplayBuffer(ReplayBuffer):
     def get_all_transitions(self):
         return self.transitions[0:self.size]
 
+
 # Define the soft actor-critic agent
-class SACAgent:
-    def __init__(self, state_dim, action_dim, n_actions=4, hidden_dim=[300,200], alpha=0.2, tau=5e-3, lr=1e-3,
+class SACAgent():
+    def __init__(self, state_dim, action_dim, n_actions=4, hidden_dim=[300, 200], alpha=0.2, tau=5e-3, lr=1e-3,
                  discount=0.99, batch_size=256, autotune=False, loss='l1', deterministic_action=False,
-                 prio_replay_buffer = False):
+                 prio_replay_buffer=False):
+        super().__init__()
+
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.n_actions = n_actions
@@ -204,6 +209,9 @@ class SACAgent:
 
         return action
 
+    def remote_act(self, state):
+        return self.select_action(state)
+
     def update(self):
         if self.prio_replay_buffer:
             transitions, inds, weights = self.replay_buffer.sample(batch=self.batch_size)
@@ -233,9 +241,9 @@ class SACAgent:
             # MSE loss using weighted error
             td_error1 = q_target - critic1_pred
             td_error2 = q_target - critic2_pred
-            critic1_loss = 0.5 * (td_error1**2 * weights).mean()
-            critic2_loss = 0.5 * (td_error2**2 * weights).mean()
-            priorities = abs(((td_error1 + td_error2)/2 + 1e-5)).squeeze().detach().numpy()
+            critic1_loss = 0.5 * (td_error1 ** 2 * weights).mean()
+            critic2_loss = 0.5 * (td_error2 ** 2 * weights).mean()
+            priorities = abs(((td_error1 + td_error2) / 2 + 1e-5)).squeeze().detach().numpy()
             self.replay_buffer.update_priorities(inds, priorities)
         else:
             critic1_loss = self.critic_loss(critic1_pred, q_target)

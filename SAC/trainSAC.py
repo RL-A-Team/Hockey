@@ -99,6 +99,9 @@ if __name__ == '__main__':
         episode_lose = []
         last_touched_step = None
 
+        touched = 0
+        first_time_touch = 1
+
         for step in range(opts.steps):
             a1 = agent.select_action(state).detach().numpy()[0]
             a2 = opponent.act(obs_agent2)
@@ -123,18 +126,33 @@ if __name__ == '__main__':
             else:
                 decrease_touch = 0
 
-            if opts.reward == 0:
+            if opts.reward == -1:
+                touched = max(touched, info['reward_touch_puck'])
+
+                reward = (
+                        r
+                        + 5 * info['reward_closeness_to_puck']
+                        - (1 - touched) * 0.1
+                        + touched * first_time_touch * 0.1 * step
+                )
+                first_time_touch = 1 - touched
+            elif opts.reward == 0:
                 reward = r
             elif opts.reward == 1:
+                # still very close to middle line, but better
                 reward = r + 4 * info["reward_closeness_to_puck"] + 5 * decrease_touch + \
                          5 * info["reward_puck_direction"]
             elif opts.reward == 2:
+                # goes directly to middle line
                 reward = r + 4 * info["reward_closeness_to_puck"] + decrease_touch + 5 * info["reward_puck_direction"]
             elif opts.reward == 3:
+                # goes directly to middle line
                 reward = r + 4 * info["reward_closeness_to_puck"] + decrease_touch + info["reward_puck_direction"]
             elif opts.reward == 4:
+                # sometimes does not even touch the ball (but does not go to middle line)
                 reward = r + 4 * info["reward_closeness_to_puck"] + decrease_touch + 2.5 * info["reward_puck_direction"]
             elif opts.reward == 5:
+                # goes directly to middle line
                 reward = r + 4 * info["reward_closeness_to_puck"] + 2.5 * decrease_touch + \
                          5 * info["reward_puck_direction"]
 
