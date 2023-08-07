@@ -100,6 +100,16 @@ class ReplayBuffer:
 
 class PrioritizedReplayBuffer(ReplayBuffer):
     def __init__(self, alpha=0.6, beta=0.4, beta_annealing=0.0001, **kwargs):
+        """ Initialize Prioritized Replay Buffer as described in
+            Schaul, Tom, et al. "Prioritized experience replay." arXiv preprint arXiv:1511.05952 (2015).
+
+        :param alpha: float
+            Prioritization of transitions degree
+        :param beta: float
+            Importance sampling correction degree
+        :param beta_annealing: float
+            Factor to anneal beta over time
+        """
         super(PrioritizedReplayBuffer, self).__init__(**kwargs)
 
         self.priorities = np.zeros((self.max_size,), dtype=np.float32)
@@ -149,6 +159,34 @@ class SACAgent():
     def __init__(self, state_dim, action_dim, n_actions=4, hidden_dim=[300, 200], alpha=0.2, tau=5e-3, lr=1e-3,
                  discount=0.99, batch_size=256, autotune=False, loss='l1', deterministic_action=False,
                  prio_replay_buffer=False):
+        """ SAC agent
+
+        :param state_dim: tuple
+            Dimensions of the state
+        :param action_dim: Box
+            Dimensions of the actions
+        :param n_actions: int
+            Number of actions
+        :param hidden_dim: list
+            List of hidden dimensions in the actor and critic network
+        :param alpha: float
+            Level of Entropy regularization
+        :param tau: float
+            Soft target updating factor
+        :param lr: float
+            Learning rate
+        :param discount: float
+            Discount factor
+        :param batch_size: int
+        :param autotune: bool
+            Autotune the alpha parameter
+        :param loss: str
+            'l1' loss or 'l2' loss
+        :param deterministic_action: bool
+        :param prio_replay_buffer: bool
+            Use prioritized replay buffer instead the usual one
+        """
+
         super().__init__()
 
         self.state_dim = state_dim
@@ -198,9 +236,11 @@ class SACAgent():
             self.alpha = alpha
 
     def set_deterministic(self, deterministic_action):
+        """ set the deterministic value """
         self.deterministic_action = deterministic_action
 
     def select_action(self, state):
+        """ return an action """
         state = torch.FloatTensor(state).unsqueeze(0)
 
         action, log_sigma, mu = self.actor.sample(state)
@@ -210,9 +250,11 @@ class SACAgent():
         return action
 
     def remote_act(self, state):
+        """ return an action """
         return self.select_action(state)
 
     def update(self):
+        """ update the networks"""
         if self.prio_replay_buffer:
             transitions, inds, weights = self.replay_buffer.sample(batch=self.batch_size)
             weights = torch.FloatTensor(weights).unsqueeze(1)
@@ -289,4 +331,5 @@ class SACAgent():
         return critic1_loss.item(), critic2_loss.item(), actor_loss.item(), alpha_loss.item()
 
     def store_transition(self, transition):
+        """ Store the transition in the replay buffer """
         self.replay_buffer.add_transition(transition)

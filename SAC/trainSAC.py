@@ -35,6 +35,8 @@ opts = parser.parse_args()
 
 
 def print_opts(opts):
+    """ Prints the defined options """
+
     print('--------------------------------------')
     print('---------TRAINING PARAMETER-----------')
     print(f'Training mode: {opts.mode}')
@@ -58,6 +60,13 @@ def print_opts(opts):
 
 
 def evaluate(agent, env, render):
+    """ Evaluate the agent 25 times against the weak basic opponent
+
+    :param agent: SAGAgent
+    :param env: HockeyEnv
+    :param render: Boolean
+    :return: percent_win: float, percent_lose: float
+    """
     agent.set_deterministic(True)
 
     eval_win = []
