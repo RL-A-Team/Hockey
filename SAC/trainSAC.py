@@ -120,7 +120,7 @@ if __name__ == '__main__':
             if last_touched_step is not None and opts.reward in [1, 2, 3, 4, 5, 6]:
                 # negative gompertz
                 decrease_touch = 1 - 0.99 * np.exp(-6 * np.exp(-0.3 * last_touched_step))
-            elif first_touched_step is not None and opts.reward in [7]:
+            elif first_touched_step is not None and opts.reward in [7, 8, 9]:
                 # negative gompertz
                 decrease_touch = 1 - 0.99 * np.exp(-6 * np.exp(-0.3 * first_touched_step))
             else:
