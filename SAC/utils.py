@@ -14,17 +14,12 @@ def cal_running_mean(x, N):
     return (cumsum[N:] - cumsum[:-N]) / float(N)
 
 
-def evaluation_plot(values, title, running_mean):
-    """create plot of the running mean values"""
-    if running_mean:
-        values = cal_running_mean(np.asarray(values), 500)
-
-    fig, ax = plt.subplots()
-    ax.plot(values)
-    ax.set_title(title)
-
-
 def longest(lists):
+    """ get the length of the longst list
+
+    :param lists: list[list[Object]]
+    :return int
+    """
     max = 0
     for list in lists:
         if len(list) > max:
@@ -34,6 +29,11 @@ def longest(lists):
 
 
 def fill_nan(lists):
+    """fill shorter lists with nans such that all lists have the same length (as the longest lists)
+
+    :param lists: list[list[Object]]
+    :return tuple(lists[0], ..., lists[n])
+    """
     desired_length = longest(lists)
 
     for i, list in enumerate(lists):
@@ -43,6 +43,16 @@ def fill_nan(lists):
             list.extend(add)
 
     return tuple(lists)
+
+
+def evaluation_plot(values, title, running_mean):
+    """create plot of the running mean values"""
+    if running_mean:
+        values = cal_running_mean(np.asarray(values), 500)
+
+    fig, ax = plt.subplots()
+    ax.plot(values)
+    ax.set_title(title)
 
 
 def plot_actor_critic_losses(critic1_losses, critic2_losses,
@@ -55,6 +65,7 @@ def plot_actor_critic_losses(critic1_losses, critic2_losses,
 
 
 def plot_wins_loses(stats_win, stats_lose):
+    """plot cumsum of wins and loses"""
     fig, ax = plt.subplots()
     ax.plot(np.cumsum(stats_win), color='green', label='Win')
     ax.plot(np.cumsum(stats_lose), color='red', label='Lose')
@@ -131,6 +142,26 @@ def plot_eval(eval_percent_win, eval_percent_lose):
     ax.set_title('Evaluation results')
 
 
+def save_multi_image(filename):
+    """ Saves all produced figures as pdf in the given filename
+
+        :param filename: str
+            Filename where the plots should be stored
+
+        Source:
+        https://www.tutorialspoint.com/saving-multiple-figures-to-one-pdf-file-in-matplotlib
+    """
+
+    pp = PdfPages(filename + '.pdf')
+    fig_nums = plt.get_fignums()
+    figs = [plt.figure(n) for n in fig_nums]
+    for fig in figs:
+        fig.savefig(pp, format='pdf')
+        plt.close(fig)
+    pp.close()
+    print(f"Plots saved in file {filename}.pdf'")
+
+
 def save_evaluation_results(critic1_losses, critic2_losses,
                             actor_losses, alpha_losses, stats_win, stats_lose, mean_rewards, mean_win, mean_lose,
                             eval_percent_win, eval_percent_lose,
@@ -201,23 +232,3 @@ def save_evaluation_results(critic1_losses, critic2_losses,
     print(f'scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/{p_filename}.pdf .')
     print(f'scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/{m_filename} .')
     print('--------------------------------------')
-
-
-def save_multi_image(filename):
-    """ Saves all produced figures as pdf in the given filename
-
-        :param filename: str
-            Filename where the plots should be stored
-
-        Source:
-        https://www.tutorialspoint.com/saving-multiple-figures-to-one-pdf-file-in-matplotlib
-    """
-
-    pp = PdfPages(filename + '.pdf')
-    fig_nums = plt.get_fignums()
-    figs = [plt.figure(n) for n in fig_nums]
-    for fig in figs:
-        fig.savefig(pp, format='pdf')
-        plt.close(fig)
-    pp.close()
-    print(f"Plots saved in file {filename}.pdf'")

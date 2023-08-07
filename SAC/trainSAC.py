@@ -33,9 +33,8 @@ parser.add_argument('--gradientsteps', type=int, default=16, help='Gradient upda
 
 opts = parser.parse_args()
 
-if __name__ == '__main__':
-    st = time.time()
 
+def print_opts(opts):
     print('--------------------------------------')
     print('---------TRAINING PARAMETER-----------')
     print(f'Training mode: {opts.mode}')
@@ -56,6 +55,51 @@ if __name__ == '__main__':
     print(f'Gradient steps: {opts.gradientsteps}')
     print('--------------------------------------')
     print('')
+
+
+def evaluate(agent, env, render):
+    agent.set_deterministic(True)
+
+    eval_win = []
+    eval_lose = []
+
+    for eval_step in range(25):
+        state, info = env.reset()
+        obs_agent2 = env.obs_agent_two()
+
+        # always evaluate against basic weak opponent (for better comparison)
+        opponent = h_env.BasicOpponent(weak=True)
+
+        for t in range(500):
+            a1 = agent.select_action(state).detach().numpy()[0]
+
+            a2 = opponent.act(obs_agent2)
+
+            next_state, raw_reward, done, _, info = env.step(np.hstack([a1, a2]))
+
+            state = next_state
+            obs_agent2 = env.obs_agent_two()
+
+            if render:
+                time.sleep(0.01)
+                env.render()
+
+            if done:
+                eval_win.append(1 if env.winner == 1 else 0)
+                eval_lose.append(1 if env.winner == -1 else 0)
+                break
+
+    percent_win = eval_win.count(1) / len(eval_win)
+    percent_lose = eval_lose.count(1) / len(eval_lose)
+    agent.set_deterministic(False)
+
+    return percent_win, percent_lose
+
+
+if __name__ == '__main__':
+    st = time.time()
+
+    print_opts(opts)
 
     if opts.mode == 'd' or opts.mode == 'defense':
         mode = h_env.HockeyEnv.TRAIN_DEFENSE
@@ -214,40 +258,9 @@ if __name__ == '__main__':
 
         # evaluate every 500 episodes in deterministic mode against basic weak opponent
         if episode % 500 == 0:
-            agent.set_deterministic(True)
-
-            eval_win = []
-            eval_lose = []
-
-            for eval_step in range(25):
-                state, info = env.reset()
-                obs_agent2 = env.obs_agent_two()
-
-                # always evaluate against basic weak opponent (for better comparison)
-                opponent = h_env.BasicOpponent(weak=True)
-
-                for t in range(500):
-                    a1 = agent.select_action(state).detach().numpy()[0]
-
-                    a2 = opponent.act(obs_agent2)
-
-                    next_state, raw_reward, done, _, info = env.step(np.hstack([a1, a2]))
-
-                    state = next_state
-                    obs_agent2 = env.obs_agent_two()
-
-                    if render:
-                        time.sleep(0.01)
-                        env.render()
-
-                    if done:
-                        eval_win.append(1 if env.winner == 1 else 0)
-                        eval_lose.append(1 if env.winner == -1 else 0)
-                        break
-
-            eval_percent_win.append(eval_win.count(1) / len(eval_win))
-            eval_percent_lose.append(eval_lose.count(1) / len(eval_lose))
-            agent.set_deterministic(False)
+            percent_win, percent_lose = evaluate(agent, env, render)
+            eval_percent_win.append(percent_win)
+            eval_percent_win.append(percent_lose)
 
     env.close()
 
