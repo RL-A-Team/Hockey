@@ -230,6 +230,7 @@ if __name__ == '__main__':
                 # may work with more training
                 reward = raw_reward + 4 * info["reward_closeness_to_puck"] + 0.5 * decrease_touch
             elif opts.reward == 7:
+                # may work with more training
                 reward = raw_reward + 4 * info["reward_closeness_to_puck"] + decrease_touch
             elif opts.reward == 8:
                 reward = raw_reward + 4 * info["reward_closeness_to_puck"] + 2.5 * decrease_touch
