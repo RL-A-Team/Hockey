@@ -11,11 +11,12 @@ import utils
 parser = ArgumentParser()
 parser.add_argument('--render', action='store_true',
                     help='Render the training process (significantly increases running time)')
-parser.add_argument('--episodes', type=int, default=10000, help='Number of episodes to train')
+parser.add_argument('--episodes', type=int, default=1500, help='Number of episodes to train')
 parser.add_argument('--steps', type=int, default=500, help='Number of maximal steps per episode')
 parser.add_argument('--mode', type=str, default='d', help='Training mode: d - defense, s - shooting, n - normal')
 parser.add_argument('--model', type=str, default=None, help='Path to pretrained model to load')
 parser.add_argument('--deterministic', action='store_true', help='Choose deterministic action (for evaluation)')
+parser.add_argument('--reward', type=int, default=0, help='Code of reward to use')
 
 # SAC hyperparameter
 parser.add_argument('--autotune', action='store_true', help='Autotune the entropy value')
@@ -26,7 +27,7 @@ parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate')
 parser.add_argument('--discount', type=float, default=0.99, help='Discount factor')
 parser.add_argument('--batchsize', type=float, default=256, help='Batch size')
 parser.add_argument('--loss', type=str, default='l1', help='Loss of the Critic Network (either l1 or l2)')
-parser.add_argument('--gradientsteps', type=int, default=64, help='Gradient update steps after each rollout')
+parser.add_argument('--gradientsteps', type=int, default=16, help='Gradient update steps after each rollout')
 
 opts = parser.parse_args()
 
@@ -36,6 +37,7 @@ if __name__ == '__main__':
     print('--------------------------------------')
     print('---------TRAINING PARAMETER-----------')
     print(f'Training mode: {opts.mode}')
+    print(f'Reward: {opts.reward}')
     print(f'Epsiodes: {opts.episodes}')
     print(f'Steps: {opts.steps}')
     print('')
@@ -95,6 +97,7 @@ if __name__ == '__main__':
         episode_rewards = []
         episode_win = []
         episode_lose = []
+        last_touched_step = None
 
         for step in range(opts.steps):
             a1 = agent.select_action(state).detach().numpy()[0]
@@ -102,7 +105,39 @@ if __name__ == '__main__':
 
             ns, r, d, _, info = env.step(np.hstack([a1, a2]))
 
-            reward = r #+ 10 * info['reward_closeness_to_puck'] + 10 * info['reward_puck_direction']
+            #reward = r
+            if last_touched_step is not None:
+                last_touched_step += 1
+            if info['reward_touch_puck'] == 1:
+                last_touched_step = 0
+
+            if last_touched_step is not None:
+                # negative gompertz
+                decrease_touch = 1 - 0.99 * np.exp(-6 * np.exp(-0.3 * last_touched_step))
+
+                # first reward
+                #reward = r + 4*info["reward_closeness_to_puck"] + 5*decrease_touch + 5*info["reward_puck_direction"]
+
+                # second reward
+                reward = r + 4 * info["reward_closeness_to_puck"] + decrease_touch + 5 * info["reward_puck_direction"]
+            else:
+                decrease_touch = 0
+
+            if opts.reward == 0:
+                reward = r
+            elif opts.reward == 1:
+                reward = r + 4 * info["reward_closeness_to_puck"] + 5 * decrease_touch + \
+                         5 * info["reward_puck_direction"]
+            elif opts.reward == 2:
+                reward = r + 4 * info["reward_closeness_to_puck"] + decrease_touch + 5 * info["reward_puck_direction"]
+            elif opts.reward == 3:
+                reward = r + 4 * info["reward_closeness_to_puck"] + decrease_touch + info["reward_puck_direction"]
+            elif opts.reward == 4:
+                reward = r + 4 * info["reward_closeness_to_puck"] + decrease_touch + 2.5 * info["reward_puck_direction"]
+            elif opts.reward == 5:
+                reward = r + 4 * info["reward_closeness_to_puck"] + 2.5 * decrease_touch + \
+                         5 * info["reward_puck_direction"]
+
             episode_rewards.append(reward)
             episode_win.append(1 if info['winner'] == 1 else 0)
             episode_lose.append(1 if env.winner == -1 else 0)
