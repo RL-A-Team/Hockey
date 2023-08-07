@@ -15,5 +15,5 @@ scontrol show job $SLURM_JOB_ID
 source $HOME/.bashrc
 
 # insert your commands here
-singularity exec --nv /home/stud54/Hockey/tcml_singularity_rl_lecture/rl_lecture python3 /home/stud54/Hockey/SAC/trainSAC.py --episodes 1500 --alpha 0.4 --loss l2 --gradientsteps 16 --lr 1e-5 --model /home/stud54/Hockey/models/sac_model_20230807T111507.pkl --mode defense
+singularity exec --nv /home/stud54/Hockey/tcml_singularity_rl_lecture/rl_lecture python3 /home/stud54/Hockey/SAC/trainSAC.py --episodes 1500 --alpha 0.4 --loss l2 --gradientsteps 16 --lr 1e-5 --model /home/stud54/Hockey/models/sac_model_20230807T113502.pkl --mode shooting
 
