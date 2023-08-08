@@ -235,6 +235,7 @@ if __name__ == '__main__':
             elif opts.reward == 8:
                 reward = raw_reward + 4 * info["reward_closeness_to_puck"] + 2.5 * decrease_touch
             elif opts.reward == 9:
+                # may also work
                 reward = raw_reward + 4 * info["reward_closeness_to_puck"] + 0.5 * decrease_touch
 
             episode_rewards.append(reward)
