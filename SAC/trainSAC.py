@@ -284,6 +284,12 @@ if __name__ == '__main__':
 
         # evaluate every 500 episodes in deterministic mode against basic weak opponent
         if episode % 500 == 0:
+            # store current agent as random opponent
+            if opts.randomopponentdir is not None:
+                # save model
+                m_filename = f'{opts.randomopponentdir}/sac_model_{np.random.randint(0, 100000000)}.pkl'
+                pickle.dump(agent, open(m_filename, 'wb'))
+
             percent_win, percent_lose = evaluate(agent, env, render)
             eval_percent_win.append(percent_win)
             eval_percent_lose.append(percent_lose)

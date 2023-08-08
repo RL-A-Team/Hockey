@@ -5,8 +5,6 @@ import torch.nn.functional as F
 import numpy as np
 from torch.distributions import Normal
 
-from SAC.RL2023HockeyTournamentClient.client.remoteControllerInterface import RemoteControllerInterface
-
 
 class Actor(nn.Module):
     def __init__(self, state_dim, action_dim, n_actions, hidden_dim=[300, 200], epsilon=1e-6):
