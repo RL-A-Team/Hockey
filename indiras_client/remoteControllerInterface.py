@@ -12,19 +12,18 @@ class RemoteControllerInterface(ABC):
         Please use the identifier to specify the Algorithm you are using
         """
 
-        self.identifier = 'DDDPQ'
+        self.identifier = identifier
 
     @abstractmethod
-    def remote_act(self, obs : np.ndarray,) -> np.ndarray:
+    def remote_act(self,
+            obs : np.ndarray,
+           ) -> np.ndarray:
 
         """
         Expects an observation as input, returns an action
         """
-        # TODO make useful
-        
-        return np.random.uniform(-1,1,4)
 
-        # raise NotImplementedError()
+        raise NotImplementedError()
 
     def before_game_starts(self) -> None:
         """

@@ -2,8 +2,7 @@ import numpy as np
 import argparse
 from typing import Dict, List, Optional
 
-from laserhockey import hockey_env as h_env
-
+import laserhockey
 
 from twisted.internet import reactor, task
 
@@ -43,7 +42,7 @@ class ClientOperationState:
 
 class Client:
 
-    __VERSION__ = 'ALRL2023_1.2'
+    __VERSION__ = 'ALRL2023_1.3'
 
     def __init__(self,
                  username : str,
@@ -285,7 +284,7 @@ escape.
                 self.quit()
 
 def main(opts):
-    controller = h_env.BasicOpponent(weak=False)
+    controller = laserhockey.hockey_env.BasicOpponent(weak=False)
     client = Client(username=opts.username,
                     controller=controller,
                     output_path=opts.output_path,

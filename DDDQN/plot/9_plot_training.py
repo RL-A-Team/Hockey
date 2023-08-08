@@ -38,7 +38,7 @@ regressor = LinearRegression()
 regressor.fit(np.array(x_axis).reshape(-1, 1), reward_f1)
 poly_reward_f1 = regressor.predict(np.array(x_axis).reshape(-1, 1))
 
-regressor.fit(np.array(x_axis).reshape(-1, 1), poly_reward_ft)
+regressor.fit(np.array(x_axis).reshape(-1, 1), reward_t)
 poly_reward_t = regressor.predict(np.array(x_axis).reshape(-1, 1))
 
 
