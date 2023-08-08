@@ -2,21 +2,23 @@ from client import Client
 from remoteControllerInterface import RemoteControllerInterface
 from sac import SACAgent
 from laserhockey import hockey_env as h_env
+import pickle
 
 
 class RemoteSACAgent(SACAgent, RemoteControllerInterface):
 
-    def __init__(self, **kwargs):
-        SACAgent.__init__(self, **kwargs)
+    def __init__(self, loaded, **kwargs):
+        self.loaded = loaded
         RemoteControllerInterface.__init__(self, identifier='SAC')
 
     def remote_act(self, state):
-        return self.select_action(state)
+        print(self.loaded.select_action(state))
+        return self.loaded.select_action(state)
 
 
 if __name__ == '__main__':
-    env = h_env.HockeyEnv(mode=h_env.HockeyEnv.NORMAL)
-    controller = RemoteSACAgent(state_dim=env.observation_space.shape, action_dim=env.action_space)
+    loaded = pickle.load(open('kristina_kleine_welt/sac_model_20230808T161743_22605.pkl', 'rb'))
+    controller = RemoteSACAgent(loaded = loaded)
     
 
     # Play n (None for an infinite amount) games and quit
