@@ -244,7 +244,11 @@ class SACAgent():
         state = torch.FloatTensor(state).unsqueeze(0)
 
         action, log_sigma, mu = self.actor.sample(state)
-        if self.deterministic_action:
+
+        try:
+            if self.deterministic_action:
+                action = mu
+        except:
             action = mu
 
         return action
