@@ -8,7 +8,8 @@ if __name__ == '__main__':
 
     f1 = False
     f2 = False
-    f3 = True
+    f3 = False
+    f4 = True
 
     if f1:
         # STANDARD REWARD
@@ -127,6 +128,38 @@ if __name__ == '__main__':
 
         ax.set_ylim([0, 1])
         ax.legend()
+
+    if f4:
+        # STANDARD REWARD
+        different_alphas_dirs = ['eval/test_rewards/r7/1e-5',
+                                 '../eval/r10']
+
+        fig, ax = plt.subplots()
+
+        for i, alpha in enumerate(['r7 1e-5', 'r10']):
+            dir = different_alphas_dirs[i]
+
+            kpi_files = [y for x in os.walk(dir) for y in glob(os.path.join(x[0], '*.csv'))]
+            kpi_files.sort()
+            print(dir)
+            print(len(kpi_files))
+            kpis = pd.read_csv(kpi_files[0])
+            for file in kpi_files[1:]:
+                kpis = kpis.append(pd.read_csv(file))
+
+            eval_percent_win = kpis['eval_percent_win'].values
+            eval_percent_win = eval_percent_win[~np.isnan(eval_percent_win)]
+            eval_percent_lose = kpis['eval_percent_lose'].values
+            eval_percent_lose = eval_percent_lose[~np.isnan(eval_percent_lose)]
+
+            ax.plot(eval_percent_win, label=alpha)
+            #ax.scatter(eval_percent_win, label=alpha)
+            #ax.plot(eval_percent_lose, label=alpha)
+            #ax.scatter(eval_percent_lose, label=alpha)
+
+        ax.set_ylim([0,1])
+        ax.legend()
+
 
     plt.show()
 

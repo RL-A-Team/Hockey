@@ -16,7 +16,7 @@ class RemoteSACAgent(SACAgent, RemoteControllerInterface):
 
 
 if __name__ == '__main__':
-    loaded = pickle.load(open('kristina_kleine_welt/sac_model_20230808T161743_22605.pkl', 'rb'))
+    loaded = pickle.load(open('kristina_kleine_welt/sac_model_20230808T161635_10178.pkl', 'rb'))
     controller = RemoteSACAgent(loaded = loaded)
     
 
