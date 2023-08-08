@@ -80,7 +80,7 @@ def evaluate(agent, env, render):
         opponent = h_env.BasicOpponent(weak=True)
 
         for t in range(500):
-            a1 = agent.select_action(state).detach().numpy()[0]
+            a1 = agent.select_action(state)
 
             a2 = opponent.act(obs_agent2)
 
@@ -189,12 +189,12 @@ if __name__ == '__main__':
         first_time_touch = 1
 
         for step in range(opts.steps):
-            a1 = agent.select_action(state).detach().numpy()[0]
+            a1 = agent.select_action(state)
 
             if hasattr(opponent, 'act'):
                 a2 = opponent.act(obs_agent2)
             else:
-                a2 = opponent.select_action(state).detach().numpy()[0]
+                a2 = opponent.select_action(state)
 
             next_state, raw_reward, done, _, info = env.step(np.hstack([a1, a2]))
 

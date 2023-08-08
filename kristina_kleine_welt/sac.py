@@ -247,7 +247,7 @@ class SACAgent():
         except:
             action = mu
 
-        return action
+        return action.detach().numpy()[0]
 
     def update(self):
         """ update the networks"""

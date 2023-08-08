@@ -12,7 +12,6 @@ class RemoteSACAgent(SACAgent, RemoteControllerInterface):
         RemoteControllerInterface.__init__(self, identifier='SAC')
 
     def remote_act(self, state):
-        print(self.loaded.select_action(state))
         return self.loaded.select_action(state)
 
 

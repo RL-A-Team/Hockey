@@ -80,7 +80,7 @@ def evaluate(agent, env, render):
         opponent = h_env.BasicOpponent(weak=True)
 
         for t in range(500):
-            a1 = agent.select_action(state).detach().numpy()[0]
+            a1 = agent.select_action(state)
 
             a2 = opponent.act(obs_agent2)
 
