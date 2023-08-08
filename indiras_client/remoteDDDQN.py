@@ -4,7 +4,7 @@ from dddqn import DDDQNAgent
 from laserhockey import hockey_env as h_env
 import torch
 
-agent_file = 'saved_agent_r1.pth'
+agent_file = 'reward_f1_ft.pth'
 
 class RemoteDDDQNAgent(DDDQNAgent, RemoteControllerInterface):
 

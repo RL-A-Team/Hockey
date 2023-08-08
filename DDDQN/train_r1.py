@@ -119,8 +119,8 @@ if __name__ == '__main__':
                 #factor = [100, 10, 100, 1]	# win and touch!    f8
                 #factor = [100, 100, 10, 10]	# win and be close!     f9
                 
-                reward = factor[0]*winner + factor[1]*closeness_puck + factor[2]*touch_puck + factor[3]*100*puck_direction  # every touch rewarded
-                #reward = factor[0]*winner + factor[1]*closeness_puck + factor[2]*touch_puck*first_touch + factor[3]*100*puck_direction # only first touch rewarded     ft
+                #reward = factor[0]*winner + factor[1]*closeness_puck + factor[2]*touch_puck + factor[3]*100*puck_direction  # every touch rewarded
+                reward = factor[0]*winner + factor[1]*closeness_puck + factor[2]*touch_puck*first_touch + factor[3]*100*puck_direction # only first touch rewarded     ft
                 
                 #reward = 10*winner + 50*closeness_puck - (1-touch_puck) + (touch_puck*first_touch*step) + 100*puck_direction   t
 
