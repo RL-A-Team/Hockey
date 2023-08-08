@@ -11,14 +11,12 @@ class Plots():
         for res in result_dict:
             np.savetxt(f'{self.path}/{self.timestamp}_{res}.txt', result_dict[res], fmt="%s", delimiter='\t')
 
-    def plot_losses(self, losses, title):
+    def plot_res(self, losses, running_mean, title):
         plt.figure()
-        plt.plot(range(len(losses)), losses, label = title)
+        plt.plot(self.running_mean(losses, running_mean), label = title)
         plt.legend()
         plt.savefig(f'{self.path}\\{self.timestamp}_{title}.png')
 
-    def plot_reward(self, rew, title):
-        plt.figure()
-        plt.plot(range(len(rew)), rew, label=title)
-        plt.legend()
-        plt.savefig(f'{self.path}\\{self.timestamp}_{title}.png')
+    def running_mean(self, x, N):
+        cumsum = np.cumsum(np.insert(x, 0, 0))
+        return (cumsum[N:] - cumsum[:-N]) / float(N)

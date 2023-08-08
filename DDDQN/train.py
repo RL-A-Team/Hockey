@@ -21,12 +21,10 @@ hidden_dim = [300, 300] # number of hidden layers of neural network
 alpha = 0.1             # actor loss weight: higher -> more exploration
 tau = 5e-3              # rate at which target networks are updated using soft updates
 learning_rate = 1e-3    # step size in updating the neural network 
-
 discount = 0.96         # importance of future rewards
-
 batch_size = 256        # transitions per update step
-epsilon = 1e-6          # probability of selecting random action instead of policy action
-max_size = 100000       # maximum capacity of replay buffer
+epsilon = 1e-4          # probability of selecting random action instead of policy action
+max_size = 1000000      # maximum capacity of replay buffer
 
 if __name__ == '__main__':
 
@@ -103,7 +101,7 @@ if __name__ == '__main__':
                 # compute a reward --- --- --- --- --- ---
                 reward = reward
 
-                factor = [1, 10, 100, 1]  # go to puck!
+                #factor = [1, 10, 100, 1]  # go to puck!
                 #factor = [10, 1, 1, 10]   # shoot towards goal!
                 #factor = [10, 5, 1, 1]   # go to puck, shoot goals!
                 #reward = factor[0]*winner + factor[1]*closeness_puck + factor[2]*touch_puck + factor[3]*100*puck_direction
