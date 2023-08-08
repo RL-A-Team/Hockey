@@ -6,31 +6,43 @@ from dddqn import DDDQNAgent
 import time
 import sys
 
-# parameters for manual configuration
+agent_file = 'saved_agent_uwu.pth'
 
 ##########
 current_subtask = 0
+subtasks = 25
 ##########
 
+# hyperparameters
 weak_opponent = True
 #game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_DEFENSE
 #game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_SHOOTING
 game_mode = h_env.HockeyEnv_BasicOpponent.NORMAL
-episodes = 100
-use_checkpoint = False
+
+episodes = 1000
+
+load_checkpoint = False
+save_checkpoint = False
 visualize = False
 
-subtasks = 15
+hidden_dim = [300, 300] # number of hidden layers of neural network
+alpha = 0.1             # actor loss weight: higher -> more exploration
+tau = 5e-3              # rate at which target networks are updated using soft updates
+learning_rate = 1e-3    # step size in updating the neural network 
+discount = 0.96         # importance of future rewards
+batch_size = 256        # transitions per update step
+epsilon = 1e-4          # probability of selecting random action instead of policy action
+max_size = 1000000      # maximum capacity of replay buffer
+
 
 factors = []
-
 fac_rewards = []
 fac_wins = []
 
-for a in range(1, 6):
-    for b in range(1, 6):
-        for c in range(1, 6):
-            for d in range(1, 6):
+for a in [1,10,100]:
+    for b in [1,10,100]:
+        for c in [1,10,100]:
+            for d in [1,10,100]:
                 factors.append([a, b, c, d])
 
 # split factors to subtasks
@@ -64,13 +76,30 @@ for factor in factors:
         env = h_env.HockeyEnv(mode=game_mode)
         
         # initialize agent with state and action dimensions
-        agent = DDDQNAgent(state_dim=env.observation_space.shape, action_dim=env.action_space)
-
+        agent = DDDQNAgent(state_dim = env.observation_space.shape, 
+                           action_dim = env.action_space, 
+                           n_actions = 4, 
+                           hidden_dim = hidden_dim, 
+                           alpha = alpha, 
+                           tau = tau, 
+                           lr = learning_rate,
+                           discount = discount, 
+                           batch_size = batch_size,
+                           epsilon = epsilon,
+                           max_size = max_size)
+        
         # load saved agent state from file
-        if (use_checkpoint):
-            checkpoint = torch.load('saved_agent.pth')
+        if (load_checkpoint):
+            checkpoint = torch.load(agent_file)
+            
             agent.critic_1.load_state_dict(checkpoint['critic_1_state_dict'])
             agent.critic_2.load_state_dict(checkpoint['critic_2_state_dict'])
+            agent.critic_target_1.load_state_dict(checkpoint['critic_target_1_state_dict'])
+            agent.critic_target_2.load_state_dict(checkpoint['critic_target_2_state_dict'])
+            agent.actor.load_state_dict(checkpoint['actor_state_dict'])
+            agent.critic_optimizer_1.load_state_dict(checkpoint['critic_optimizer_1_state_dict'])
+            agent.critic_optimizer_2.load_state_dict(checkpoint['critic_optimizer_2_state_dict'])
+            agent.actor_optimizer.load_state_dict(checkpoint['actor_optimizer_state_dict'])
 
         episode_counter = 0
         total_step_counter = 0
@@ -78,6 +107,7 @@ for factor in factors:
         new_op_grad = []
 
         total_wins = 0
+        total_losses = 0
         total_reward = 0
         
 
@@ -111,7 +141,8 @@ for factor in factors:
                     reward = factor[0]*winner + factor[1]*closeness_puck + factor[2]*touch_puck + factor[3]*puck_direction
                     
                     # sum up total reward of episodes
-                    total_wins += winner
+                    total_wins += winner if winner == 1 else 0
+                    total_losses += 1 if winner == -1 else 0
                     total_reward += reward
 
                     agent.store_transition((state, a1, reward, obs, done))
@@ -134,11 +165,19 @@ for factor in factors:
             print(f'Episode {episode_counter}: Winner {env.winner}')
 
         
-        # save the agent's two critics to file
-        torch.save({
-        'critic_1_state_dict': agent.critic_1.state_dict(),
-        'critic_2_state_dict': agent.critic_2.state_dict(),
-        }, 'saved_agent.pth')
+        if (save_checkpoint):
+            checkpoint = {
+            'critic_1_state_dict': agent.critic_1.state_dict(),
+            'critic_2_state_dict': agent.critic_2.state_dict(),
+            'critic_target_1_state_dict': agent.critic_target_1.state_dict(),
+            'critic_target_2_state_dict': agent.critic_target_2.state_dict(),
+            'actor_state_dict': agent.actor.state_dict(),
+            'critic_optimizer_1_state_dict': agent.critic_optimizer_1.state_dict(),
+            'critic_optimizer_2_state_dict': agent.critic_optimizer_2.state_dict(),
+            'actor_optimizer_state_dict': agent.actor_optimizer.state_dict(),
+            }
+        
+            torch.save(checkpoint, agent_file)
         
 
         # close environment
