@@ -140,6 +140,7 @@ if __name__ == '__main__':
             dir = different_alphas_dirs[i]
 
             kpi_files = [y for x in os.walk(dir) for y in glob(os.path.join(x[0], '*.csv'))]
+            kpi_files.sort()
             print(dir)
             print(len(kpi_files))
             kpis = pd.read_csv(kpi_files[0])
