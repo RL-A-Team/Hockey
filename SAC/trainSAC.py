@@ -273,7 +273,7 @@ if __name__ == '__main__':
         if episode % 500 == 0:
             percent_win, percent_lose = evaluate(agent, env, render)
             eval_percent_win.append(percent_win)
-            eval_percent_win.append(percent_lose)
+            eval_percent_lose.append(percent_lose)
 
     env.close()
 
