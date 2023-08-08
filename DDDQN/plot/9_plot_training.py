@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 
 '''
-episodes = 4000 mode = NORMAL
+episodes = 100000 mode = NORMAL
 hidden_dim = [300,300]
 alpha = 0.1
 tau = 1e-3
@@ -38,7 +38,7 @@ regressor = LinearRegression()
 regressor.fit(np.array(x_axis).reshape(-1, 1), reward_f1)
 poly_reward_f1 = regressor.predict(np.array(x_axis).reshape(-1, 1))
 
-regressor.fit(np.array(x_axis).reshape(-1, 1), reward_t)
+regressor.fit(np.array(x_axis).reshape(-1, 1), poly_reward_ft)
 poly_reward_t = regressor.predict(np.array(x_axis).reshape(-1, 1))
 
 

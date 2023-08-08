@@ -1,5 +1,6 @@
 ssh auf Cluster:
 ssh stud54@tcml-master01.uni-tuebingen.de
+too5xeit3T
 
 ausführen im Hockey Ordner:
 sbatch DDDQN/job.sh
@@ -10,14 +11,6 @@ squeue --me
 errors und output:
 ~/Hockey/logs/job_<job_id>.[err | out]
 
-625 factors
-47 seconds per factor
-900 seconds available
--> 20 factors per subtask
--> 32 subtasks
 
-858802 ...
-
-0,1,2,3,4,5,6,7
 
 

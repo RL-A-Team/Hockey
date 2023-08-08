@@ -157,7 +157,7 @@ class DDDQNAgent:
         # create replay buffer
         self.replay_buffer = ReplayBuffer(max_size=self.max_size)
 
-        # create the 1 Q-value networks and their target networks (-> soft updates)
+        # create the 2 Q-value networks and their target networks (-> soft updates)
         self.critic_1 = Critic(self.state_dim, self.n_actions, self.hidden_dim)
         self.critic_2 = Critic(self.state_dim, self.n_actions, self.hidden_dim)
         self.critic_target_1 = Critic(self.state_dim, self.n_actions, self.hidden_dim)
