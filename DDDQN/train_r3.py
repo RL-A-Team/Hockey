@@ -11,7 +11,7 @@ weak_opponent = True
 #game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_SHOOTING
 game_mode = h_env.HockeyEnv_BasicOpponent.NORMAL
 
-episodes = 4000
+episodes = 40000
 
 load_checkpoint = False
 save_checkpoint = True

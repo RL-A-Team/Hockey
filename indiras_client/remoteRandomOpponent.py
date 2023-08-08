@@ -28,7 +28,7 @@ if __name__ == '__main__':
                     num_games=None)
     '''               
     # Play n (None for an infinite amount) games and quit
-    client = Client(username='stud54',
+    client = Client(username='A_Team',
                     password='too5xeit3T',
                     controller=controller,
                     output_path='logs/basic_opponents', # rollout buffer with finished games will be saved in here

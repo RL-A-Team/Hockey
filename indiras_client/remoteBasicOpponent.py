@@ -8,7 +8,7 @@ class RemoteBasicOpponent(BasicOpponent, RemoteControllerInterface):
 
     def __init__(self, weak, keep_mode=True):
         BasicOpponent.__init__(self, weak=weak, keep_mode=keep_mode)
-        RemoteControllerInterface.__init__(self, identifier='StrongBasicOpponent')
+        RemoteControllerInterface.__init__(self, identifier='Randy Oppenheimer')
 
     def remote_act(self,
             obs : np.ndarray,
@@ -21,13 +21,13 @@ if __name__ == '__main__':
     controller = RemoteBasicOpponent(weak=False)
 
     # Play n (None for an infinite amount) games and quit
-    client = Client(username='stud54',
+    client = Client(username='A_Team',
                     password='too5xeit3T',
                     controller=controller,
                     output_path='logs/basic_opponents', # rollout buffer with finished games will be saved in here
                     interactive=False,
                     op='start_queuing',
-                    server_addr='localhost',#TODO comment out
+                    #server_addr='localhost',#TODO comment out
                     num_games=None)
 
     # Start interactive mode. Start playing by typing start_queuing. Stop playing by pressing escape and typing stop_queueing

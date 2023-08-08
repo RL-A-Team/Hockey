@@ -12,7 +12,7 @@ class RemoteControllerInterface(ABC):
         Please use the identifier to specify the Algorithm you are using
         """
 
-        self.identifier = 'A_Team_DDDPQ'
+        self.identifier = 'DDDPQ'
 
     @abstractmethod
     def remote_act(self, obs : np.ndarray,) -> np.ndarray:
