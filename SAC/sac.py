@@ -5,7 +5,7 @@ import torch.nn.functional as F
 import numpy as np
 from torch.distributions import Normal
 
-#from SAC.RL2023HockeyTournamentClient.client.remoteControllerInterface import RemoteControllerInterface
+from SAC.RL2023HockeyTournamentClient.client.remoteControllerInterface import RemoteControllerInterface
 
 
 class Actor(nn.Module):
@@ -187,8 +187,6 @@ class SACAgent():
             Use prioritized replay buffer instead the usual one
         """
 
-        super().__init__()
-
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.n_actions = n_actions
@@ -252,10 +250,6 @@ class SACAgent():
             action = mu
 
         return action
-
-    def remote_act(self, state):
-        """ return an action """
-        return self.select_action(state)
 
     def update(self):
         """ update the networks"""
