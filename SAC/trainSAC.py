@@ -165,7 +165,10 @@ if __name__ == '__main__':
             elif choice == 'strong':
                 opponent = h_env.BasicOpponent(weak=False)
             else:
-                opponent = pickle.load(open(f'{opts.randomopponentdir}/{choice}', 'rb'))
+                try:
+                    opponent = pickle.load(open(f'{opts.randomopponentdir}/{choice}', 'rb'))
+                except:
+                    opponent = h_env.BasicOpponent(weak=False)
 
             print('--------------------------------------')
             print(f'Random chosen opponent: {choice}')
