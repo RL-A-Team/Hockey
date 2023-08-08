@@ -1,0 +1,4 @@
+laserhockey @ git+https://git@github.com/martius-lab/laser-hockey-env.git@master
+twisted
+imageio
+imageio-ffmpeg
