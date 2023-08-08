@@ -171,7 +171,7 @@ if __name__ == '__main__':
                     opponent = h_env.BasicOpponent(weak=False)
 
             print('--------------------------------------')
-            print(f'Random chosen opponent: {choice}')
+            print(f'Episode {episode}, random chosen opponent: {choice}')
             print('--------------------------------------')
             print('')
         else:
