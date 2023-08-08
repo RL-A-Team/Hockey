@@ -5,6 +5,8 @@ from dddqn import DDDQNAgent
 import time
 import matplotlib.pyplot as plt
 
+agent_file = 'reward_f8_ft.pth'
+
 # hyperparameters
 weak_opponent = True
 #game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_DEFENSE
@@ -46,16 +48,8 @@ if __name__ == '__main__':
                        epsilon = epsilon,
                        max_size = max_size)
 
-    '''
-    # load saved agent state from file
     if (load_checkpoint):
-        checkpoint = torch.load('saved_agent_r3.pth')
-        agent.critic_1.load_state_dict(checkpoint['critic_1_state_dict'])
-        agent.critic_2.load_state_dict(checkpoint['critic_2_state_dict'])
-    '''
-
-    if (load_checkpoint):
-        checkpoint = torch.load('saved_agent_r3.pth')
+        checkpoint = torch.load(agent_file)
         
         agent.critic_1.load_state_dict(checkpoint['critic_1_state_dict'])
         agent.critic_2.load_state_dict(checkpoint['critic_2_state_dict'])
@@ -115,20 +109,27 @@ if __name__ == '__main__':
                 # compute a reward --- --- --- --- --- ---
                 #reward = reward
 
-                factor = [1, 10, 100, 1]  # go to puck!
-                #factor = [10, 1, 1, 10]   # shoot towards goal!
-                #factor = [10, 5, 1, 1]   # go to puck, shoot goals!
-                #reward = factor[0]*winner + factor[1]*closeness_puck + factor[2]*touch_puck + factor[3]*100*puck_direction             # every touch rewarded
-                reward = factor[0]*winner + factor[1]*closeness_puck + factor[2]*touch_puck*first_touch + factor[3]*100*puck_direction  # only first touch rewarded
+                #factor = [1, 10, 100, 1]  # go to puck!    f1
+                #factor = [10, 1, 1, 10]   # shoot towards goal!   f2 
+                #factor = [10, 5, 1, 1]   # go to puck, shoot goals!    f3
+                #factor = [1, 10, 100, 10]   # go to puck!, maybe shoot goals? uwu   f4
+                #factor = [1, 10, 1, 1]		# be in puck proximity :)      f5
+                #factor = [1, 100, 1, 10] 	# more proximity, also shoot towards goal   f6
+                #factor = [10, 10, 100, 1]	# be close, TOUCH, also win     f7
+                factor = [100, 10, 100, 1]	# win and touch!    f8
+                #factor = [100, 100, 10, 10]	# win and be close!     f9
                 
-                #reward = 10*winner + 50*closeness_puck - (1-touch_puck) + (touch_puck*first_touch*step) + 100*puck_direction
+                #reward = factor[0]*winner + factor[1]*closeness_puck + factor[2]*touch_puck + factor[3]*100*puck_direction  # every touch rewarded
+                reward = factor[0]*winner + factor[1]*closeness_puck + factor[2]*touch_puck*first_touch + factor[3]*100*puck_direction # only first touch rewarded     ft
+                
+                #reward = 10*winner + 50*closeness_puck - (1-touch_puck) + (touch_puck*first_touch*step) + 100*puck_direction   t
 
                 # --- --- --- --- --- --- --- --- --- --- ---
 
                 # sum up total reward of episodes
-                total_wins += 1 if winner == 1 else 0
+                total_wins += winner if winner == 1 else 0
                 total_losses += 1 if winner == -1 else 0
-                data_point_sum += 1 if winner == 1 else 0
+                data_point_sum += winner if winner == 1 else 0
                 total_reward += reward
 
                 agent.store_transition((state, a1, reward, obs, done))
@@ -158,15 +159,6 @@ if __name__ == '__main__':
 
         print(f'Episode {episode_counter}: Winner {env.winner}')
 
-    '''
-    if (save_checkpoint):
-        # save the agent's two critics to file
-        torch.save({
-        'critic_1_state_dict': agent.critic_1.state_dict(),
-        'critic_2_state_dict': agent.critic_2.state_dict(),
-        }, 'saved_agent_r3.pth')
-    ''' 
-
     if (save_checkpoint):
         checkpoint = {
         'critic_1_state_dict': agent.critic_1.state_dict(),
@@ -179,13 +171,13 @@ if __name__ == '__main__':
         'actor_optimizer_state_dict': agent.actor_optimizer.state_dict(),
         }
     
-        torch.save(checkpoint, 'saved_agent_r3.pth')
+        torch.save(checkpoint, agent_file)
+    
 
     # close environment
     env.close()
     print(f'Wins: {(total_wins/episodes)*100} %')
     print(f'Losses: {(total_losses/episodes)*100} %')
-    
     print(f'Total reward {total_reward}')
     print(f'Reward per round {total_reward/episodes}')
 
@@ -196,5 +188,3 @@ if __name__ == '__main__':
     end_time = time.time()
     execution_time = end_time - start_time
     print(f"Program execution took {execution_time:.4f} seconds.")
-
-

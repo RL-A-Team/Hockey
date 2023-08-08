@@ -6,7 +6,7 @@
 #SBATCH --time=00:15:00           # Runtime in D-HH:MM
 #SBATCH --output=indiras_logs/job_%j.out  # File to which STDOUT will be written - make sure this is not on $HOME
 #SBATCH --error=indiras_logs/job_%j.err   # File to which STDERR will be written - make sure this is not on $HOME
-#SBATCH --mail-type=ALL           # Type of email notification- BEGIN,END,FAIL,ALL
+#SBATCH --mail-type=NONE           # Type of email notification- BEGIN,END,FAIL,ALL
 #SBATCH --mail-user=indira.echsler@student.uni-tuebingen.de   # Email to which notifications will be sent
 
 # print info about current job

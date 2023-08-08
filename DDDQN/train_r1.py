@@ -5,7 +5,7 @@ from dddqn import DDDQNAgent
 import time
 import matplotlib.pyplot as plt
 
-agent_file = 'saved_agent_uwu.pth'
+agent_file = 'reward_f5_ft.pth'
 
 # hyperparameters
 weak_opponent = True
@@ -13,10 +13,10 @@ weak_opponent = True
 #game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_SHOOTING
 game_mode = h_env.HockeyEnv_BasicOpponent.NORMAL
 
-episodes = 4000
+episodes = 40000
 
 load_checkpoint = False
-save_checkpoint = False
+save_checkpoint = True
 visualize = False
 
 hidden_dim = [300, 300] # number of hidden layers of neural network

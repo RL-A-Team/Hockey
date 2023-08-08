@@ -25,6 +25,10 @@ reward_f8   = [7, 12, 10, 11, 10, 13, 11, 9, 17, 15, 18, 16, 16, 16, 14, 17, 22,
 reward_f9   = [4, 10, 12, 18, 9, 12, 14, 17, 15, 15, 17, 14, 13, 15, 24, 17, 15, 22, 20, 23, 20, 23, 22, 25, 14, 18, 17, 28, 24, 25, 21, 29, 27, 24, 20, 18, 21, 25, 23, 29]
 
 reward_f1_ft = [2, 1, 16, 13, 13, 15, 24, 18, 13, 18, 17, 14, 20, 13, 20, 17, 22, 19, 20, 16, 11, 18, 15, 22, 24, 21, 17, 30, 20, 27, 26, 20, 22, 30, 21, 17, 24, 26, 26, 31]
+reward_f5_ft = [15, 8, 11, 11, 12, 20, 18, 17, 21, 20, 21, 21, 22, 23, 12, 20, 26, 22, 22, 20, 27, 19, 25, 28, 26, 26, 27, 19, 25, 23, 28, 23, 34, 21, 25, 25, 24, 34, 35, 35]
+reward_f7_ft = [10, 17, 19, 21, 17, 10, 23, 17, 22, 18, 19, 22, 18, 21, 22, 17, 21, 23, 22, 18, 24, 26, 17, 29, 27, 27, 35, 29, 22, 28, 42, 35, 28, 36, 28, 28, 31, 36, 34, 34]
+reward_f8_ft = [6, 16, 16, 16, 25, 16, 19, 15, 21, 21, 19, 15, 13, 24, 19, 21, 21, 23, 26, 23, 24, 23, 26, 31, 26, 17, 28, 17, 23, 27, 23, 24, 27, 27, 36, 29, 28, 28, 34, 31]
+
 reward_t    = [15, 15, 15, 8, 16, 14, 11, 16, 16, 18, 12, 24, 21, 24, 17, 26, 15, 19, 25, 27, 13, 21, 26, 19, 22, 17, 15, 23, 25, 32, 19, 36, 23, 27, 31, 31, 30, 32, 30, 29]
 
 x_axis = [x * 100 for x in range(len(reward_r))]
@@ -33,18 +37,22 @@ x_axis = [x * 100 for x in range(len(reward_r))]
 plt.figure(figsize=(10, 5))
 
 plt.subplot(1, 2, 1)
-plt.plot(x_axis, reward_r, label='reward')
+#plt.plot(x_axis, reward_r, label='reward')
 plt.plot(x_axis, reward_f1, label='f1')
-plt.plot(x_axis, reward_f2, label='f2')
-plt.plot(x_axis, reward_f3, label='f3')
-plt.plot(x_axis, reward_f4, label='f4')
-plt.plot(x_axis, reward_f5, label='f5')
-plt.plot(x_axis, reward_f6, label='f6')
-plt.plot(x_axis, reward_f7, label='f7')
-plt.plot(x_axis, reward_f8, label='f8')
-plt.plot(x_axis, reward_f9, label='f9')
+#plt.plot(x_axis, reward_f2, label='f2')
+#plt.plot(x_axis, reward_f3, label='f3')
+#plt.plot(x_axis, reward_f4, label='f4')
+#plt.plot(x_axis, reward_f5, label='f5')
+#plt.plot(x_axis, reward_f6, label='f6')
+#plt.plot(x_axis, reward_f7, label='f7')
+#plt.plot(x_axis, reward_f8, label='f8')
+#plt.plot(x_axis, reward_f9, label='f9')
 
-plt.plot(x_axis, reward_f1_ft, label='ft')
+plt.plot(x_axis, reward_f1_ft, label='f1_ft')
+plt.plot(x_axis, reward_f5_ft, label='f5_ft')
+plt.plot(x_axis, reward_f7_ft, label='f7_ft')
+plt.plot(x_axis, reward_f8_ft, label='f8_ft')
+
 plt.plot(x_axis, reward_t, label='t')
 
 
@@ -89,23 +97,36 @@ poly_reward_f9 = regressor.predict(np.array(x_axis).reshape(-1, 1))
 regressor.fit(np.array(x_axis).reshape(-1, 1), reward_f1_ft)
 poly_reward_f1_ft = regressor.predict(np.array(x_axis).reshape(-1, 1))
 
+regressor.fit(np.array(x_axis).reshape(-1, 1), reward_f5_ft)
+poly_reward_f5_ft = regressor.predict(np.array(x_axis).reshape(-1, 1))
+
+regressor.fit(np.array(x_axis).reshape(-1, 1), reward_f7_ft)
+poly_reward_f7_ft = regressor.predict(np.array(x_axis).reshape(-1, 1))
+
+regressor.fit(np.array(x_axis).reshape(-1, 1), reward_f8_ft)
+poly_reward_f8_ft = regressor.predict(np.array(x_axis).reshape(-1, 1))
+
 regressor.fit(np.array(x_axis).reshape(-1, 1), reward_t)
 poly_reward_t = regressor.predict(np.array(x_axis).reshape(-1, 1))
 
 
 # Plot the regression lines
 plt.subplot(1, 2, 2)
-plt.plot(x_axis, poly_reward_r, label='reward')
+#plt.plot(x_axis, poly_reward_r, label='reward')
 plt.plot(x_axis, poly_reward_f1, label='f1')
-plt.plot(x_axis, poly_reward_f2, label='f2')
-plt.plot(x_axis, poly_reward_f3, label='f3')
-plt.plot(x_axis, poly_reward_f4, label='f4')
-plt.plot(x_axis, poly_reward_f5, label='f5')
-plt.plot(x_axis, poly_reward_f6, label='f6')
-plt.plot(x_axis, poly_reward_f7, label='f7')
-plt.plot(x_axis, poly_reward_f8, label='f8')
-plt.plot(x_axis, poly_reward_f9, label='f9')
-plt.plot(x_axis, poly_reward_f1_ft, label='ft')
+#plt.plot(x_axis, poly_reward_f2, label='f2')
+#plt.plot(x_axis, poly_reward_f3, label='f3')
+#plt.plot(x_axis, poly_reward_f4, label='f4')
+#plt.plot(x_axis, poly_reward_f5, label='f5')
+#plt.plot(x_axis, poly_reward_f6, label='f6')
+#plt.plot(x_axis, poly_reward_f7, label='f7')
+#plt.plot(x_axis, poly_reward_f8, label='f8')
+#plt.plot(x_axis, poly_reward_f9, label='f9')
+
+plt.plot(x_axis, poly_reward_f1_ft, label='f1_ft')
+plt.plot(x_axis, poly_reward_f5_ft, label='f5_ft')
+plt.plot(x_axis, poly_reward_f7_ft, label='f7_ft')
+plt.plot(x_axis, poly_reward_f8_ft, label='f8_ft')
 plt.plot(x_axis, poly_reward_t, label='t')
 
 # Add labels and title
