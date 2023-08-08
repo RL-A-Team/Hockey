@@ -144,6 +144,8 @@ if __name__ == '__main__':
     eval_percent_lose = []
 
     for episode in range(opts.episodes):
+        print('')
+        print(f'Episode {episode}')
         state, info = env.reset()
         obs_agent2 = env.obs_agent_two()
 
@@ -171,7 +173,7 @@ if __name__ == '__main__':
                     opponent = h_env.BasicOpponent(weak=False)
 
             print('--------------------------------------')
-            print(f'Episode {episode}, random chosen opponent: {choice}')
+            print(f'Random chosen opponent: {choice}')
             print('--------------------------------------')
             print('')
         else:
@@ -256,6 +258,10 @@ if __name__ == '__main__':
                 reward = raw_reward + 4 * info["reward_closeness_to_puck"] + 0.5 * decrease_touch
             elif opts.reward == 10:
                 factor = [1, 10, 100, 1]
+                reward = factor[0] * info['winner'] + \
+                         factor[1] * info['reward_closeness_to_puck'] + \
+                         factor[2] * info['reward_touch_puck'] + \
+                         factor[3] * 100 * info['reward_puck_direction']
 
             episode_rewards.append(reward)
             episode_win.append(1 if info['winner'] == 1 else 0)
