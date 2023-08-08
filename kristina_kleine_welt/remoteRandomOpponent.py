@@ -1,12 +1,12 @@
 import numpy as np
 
-from client import RemoteControllerInterface
-from client import Client
+from client.remoteControllerInterface import RemoteControllerInterface
+from client.backend.client import Client
 
 class RemoteRandomOpponent(RemoteControllerInterface):
 
     def __init__(self):
-        RemoteControllerInterface.__init__(self, identifier='StrongBasicOpponent')
+        RemoteControllerInterface.__init__(self, identifier='RandomActions')
 
     def remote_act(self, 
             obs : np.ndarray,
@@ -16,7 +16,7 @@ class RemoteRandomOpponent(RemoteControllerInterface):
         
 
 if __name__ == '__main__':
-    controller = RemoteRandomOpponent()
+    controller = RemoteRandomOpponent(weak=False)
 
     # Play n (None for an infinite amount) games and quit
     client = Client(username='user0', # Testuser

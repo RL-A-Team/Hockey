@@ -42,7 +42,7 @@ class ClientOperationState:
 
 class Client:
 
-    __VERSION__ = 'ALRL2023_1.2'
+    __VERSION__ = 'ALRL2023_1.3'
 
     def __init__(self,
                  username : str,

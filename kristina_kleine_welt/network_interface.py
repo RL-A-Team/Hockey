@@ -4,7 +4,7 @@ from twisted.spread import pb
 from twisted.internet import reactor, defer
 from twisted.cred import credentials, error as cred_error
 
-from error import ServerClientVersionMissmatchError
+from error import *
 
 class NotConnectedError(Exception):
     pass
@@ -123,23 +123,22 @@ class NetworkInterface(pb.Referenceable):
 
     def remote_game_done(self,
                          ob : List[float],
-                         r : int,
+                         r : float,
                          done : int,
                          trunc: int,
                          info : Dict,
                          result : Dict
                         ) -> None:
-
+        print(type(r), r)
         self.client.game_done(ob, r, done, trunc, info, result)
 
     def remote_receive_observation(self,
                                    ob : List[float],
-                                   r: int,
+                                   r: float,
                                    done : int,
                                    trunc : int,
                                    info : Dict
                                   ) -> None:
-
         self.client.step(ob, r, done, trunc, info)
 
     # Functions called by client
