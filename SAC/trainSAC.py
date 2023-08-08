@@ -254,6 +254,8 @@ if __name__ == '__main__':
             elif opts.reward == 9:
                 # may also work
                 reward = raw_reward + 4 * info["reward_closeness_to_puck"] + 0.5 * decrease_touch
+            elif opts.reward == 10:
+                factor = [1, 10, 100, 1]
 
             episode_rewards.append(reward)
             episode_win.append(1 if info['winner'] == 1 else 0)
