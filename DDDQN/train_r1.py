@@ -5,16 +5,18 @@ from dddqn import DDDQNAgent
 import time
 import matplotlib.pyplot as plt
 
+agent_file = 'saved_agent_uwu.pth'
+
 # hyperparameters
 weak_opponent = True
 #game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_DEFENSE
 #game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_SHOOTING
 game_mode = h_env.HockeyEnv_BasicOpponent.NORMAL
 
-episodes = 40000
+episodes = 4000
 
 load_checkpoint = False
-save_checkpoint = True
+save_checkpoint = False
 visualize = False
 
 hidden_dim = [300, 300] # number of hidden layers of neural network
@@ -50,13 +52,13 @@ if __name__ == '__main__':
     '''
     # load saved agent state from file
     if (load_checkpoint):
-        checkpoint = torch.load('saved_agent_r1.pth')
+        checkpoint = torch.load(saved_agent)
         agent.critic_1.load_state_dict(checkpoint['critic_1_state_dict'])
         agent.critic_2.load_state_dict(checkpoint['critic_2_state_dict'])
     '''
 
     if (load_checkpoint):
-        checkpoint = torch.load('saved_agent_r1.pth')
+        checkpoint = torch.load(agent_file)
         
         agent.critic_1.load_state_dict(checkpoint['critic_1_state_dict'])
         agent.critic_2.load_state_dict(checkpoint['critic_2_state_dict'])
@@ -74,6 +76,7 @@ if __name__ == '__main__':
 
     # save metrics
     total_wins = 0
+    total_losses = 0
     total_reward = 0
 
     data_point_distance = 100
@@ -115,18 +118,20 @@ if __name__ == '__main__':
                 # compute a reward --- --- --- --- --- ---
                 #reward = reward
 
-                factor = [1, 10, 100, 1]  # go to puck!
-                #factor = [10, 1, 1, 10]   # shoot towards goal!
-                #factor = [10, 5, 1, 1]   # go to puck, shoot goals!
+                #factor = [1, 10, 100, 1]  # go to puck!    f1
+                #factor = [10, 1, 1, 10]   # shoot towards goal!   f2 
+                #factor = [10, 5, 1, 1]   # go to puck, shoot goals!    f3
+                factor = [1, 10, 100, 10]   # go to puck!, maybe shoot goals? uwu   f4
                 reward = factor[0]*winner + factor[1]*closeness_puck + factor[2]*touch_puck + factor[3]*100*puck_direction  # every touch rewarded
-                #reward = factor[0]*winner + factor[1]*closeness_puck + factor[2]*touch_puck*first_touch + factor[3]*100*puck_direction # only first touch rewarded
+                #reward = factor[0]*winner + factor[1]*closeness_puck + factor[2]*touch_puck*first_touch + factor[3]*100*puck_direction # only first touch rewarded     ft
                 
-                #reward = 10*winner + 50*closeness_puck - (1-touch_puck) + (touch_puck*first_touch*step) + 100*puck_direction
+                #reward = 10*winner + 50*closeness_puck - (1-touch_puck) + (touch_puck*first_touch*step) + 100*puck_direction   t
 
                 # --- --- --- --- --- --- --- --- --- --- ---
 
                 # sum up total reward of episodes
                 total_wins += winner if winner == 1 else 0
+                total_losses += 1 if winner == -1 else 0
                 data_point_sum += winner if winner == 1 else 0
                 total_reward += reward
 
@@ -163,7 +168,7 @@ if __name__ == '__main__':
         torch.save({
         'critic_1_state_dict': agent.critic_1.state_dict(),
         'critic_2_state_dict': agent.critic_2.state_dict(),
-        }, 'saved_agent_r1.pth')
+        }, agent_file)
     ''' 
 
     if (save_checkpoint):
@@ -178,12 +183,13 @@ if __name__ == '__main__':
         'actor_optimizer_state_dict': agent.actor_optimizer.state_dict(),
         }
     
-        torch.save(checkpoint, 'saved_agent_r1.pth')
+        torch.save(checkpoint, agent_file)
     
 
     # close environment
     env.close()
     print(f'Wins: {(total_wins/episodes)*100} %')
+    print(f'Losses: {(total_losses/episodes)*100} %')
     print(f'Total reward {total_reward}')
     print(f'Reward per round {total_reward/episodes}')
 
