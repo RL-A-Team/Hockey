@@ -18,7 +18,7 @@ parser.add_argument('--mode', type=str, default='d', help='Training mode: d - de
 parser.add_argument('--model', type=str, default=None, help='Path to pretrained model to load')
 parser.add_argument('--deterministic', action='store_true', help='Choose deterministic action (for evaluation)')
 parser.add_argument('--reward', type=int, default=0, help='Code of reward to use')
-parser.add_argument('--randomopponent', action='store_true', help='Use an random agent as opponent')
+parser.add_argument('--randomopponentdir', type=str, default=None, help='Directory to pick an random agent as opponent')
 
 # SAC hyperparameter
 parser.add_argument('--autotune', action='store_true', help='Autotune the entropy value')
@@ -148,14 +148,30 @@ if __name__ == '__main__':
         obs_agent2 = env.obs_agent_two()
 
         # select random opponent if desired, else use basic weak opponent
-        if opts.randomopponent:
-            opponent_dir = 'SAC/opponents'
-            opponents = os.listdir(opponent_dir)
+        if opts.randomopponentdir is not None:
+            opponents = os.listdir(opts.randomopponentdir)
+            opponents.append('weak')
+            opponents.append('strong')
+            opponents.append('strong')
+            opponents.append('strong')
+            opponents.append('strong')
+            opponents.append('strong')
+            opponents.append('strong')
+            opponents.append('strong')
             choice = np.random.choice(opponents)
 
-            opponent = pickle.load(open(f'{opponent_dir}/{choice}', 'rb'))
+            if choice == 'weak':
+                opponent = h_env.BasicOpponent(weak=True)
+            elif choice == 'strong':
+                opponent = h_env.BasicOpponent(weak=False)
+            else:
+                try:
+                    opponent = pickle.load(open(f'{opts.randomopponentdir}/{choice}', 'rb'))
+                except:
+                    opponent = h_env.BasicOpponent(weak=False)
+
             print('--------------------------------------')
-            print(f'Random chosen opponent: {choice}')
+            print(f'Episode {episode}, random chosen opponent: {choice}')
             print('--------------------------------------')
             print('')
         else:
@@ -271,6 +287,12 @@ if __name__ == '__main__':
 
         # evaluate every 500 episodes in deterministic mode against basic weak opponent
         if episode % 500 == 0:
+            # store current agent as random opponent
+            if opts.randomopponentdir is not None:
+                # save model
+                m_filename = f'{opts.randomopponentdir}/sac_model_{np.random.randint(0, 100000000)}.pkl'
+                pickle.dump(agent, open(m_filename, 'wb'))
+
             percent_win, percent_lose = evaluate(agent, env, render)
             eval_percent_win.append(percent_win)
             eval_percent_lose.append(percent_lose)
