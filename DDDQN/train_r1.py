@@ -48,15 +48,6 @@ if __name__ == '__main__':
                        epsilon = epsilon,
                        max_size = max_size)
 
-
-    '''
-    # load saved agent state from file
-    if (load_checkpoint):
-        checkpoint = torch.load(saved_agent)
-        agent.critic_1.load_state_dict(checkpoint['critic_1_state_dict'])
-        agent.critic_2.load_state_dict(checkpoint['critic_2_state_dict'])
-    '''
-
     if (load_checkpoint):
         checkpoint = torch.load(agent_file)
         
@@ -121,7 +112,13 @@ if __name__ == '__main__':
                 #factor = [1, 10, 100, 1]  # go to puck!    f1
                 #factor = [10, 1, 1, 10]   # shoot towards goal!   f2 
                 #factor = [10, 5, 1, 1]   # go to puck, shoot goals!    f3
-                factor = [1, 10, 100, 10]   # go to puck!, maybe shoot goals? uwu   f4
+                #factor = [1, 10, 100, 10]   # go to puck!, maybe shoot goals? uwu   f4
+                factor = [1, 10, 1, 1]		# be in puck proximity :)      f5
+                #factor = [1, 100, 1, 10] 	# more proximity, also shoot towards goal   f6
+                #factor = [10, 10, 100, 1]	# be close, TOUCH, also win     f7
+                #factor = [100, 10, 100, 1]	# win and touch!    f8
+                #factor = [100, 100, 10, 10]	# win and be close!     f9
+                
                 reward = factor[0]*winner + factor[1]*closeness_puck + factor[2]*touch_puck + factor[3]*100*puck_direction  # every touch rewarded
                 #reward = factor[0]*winner + factor[1]*closeness_puck + factor[2]*touch_puck*first_touch + factor[3]*100*puck_direction # only first touch rewarded     ft
                 
@@ -161,15 +158,6 @@ if __name__ == '__main__':
         episode_counter += 1
 
         print(f'Episode {episode_counter}: Winner {env.winner}')
-
-    '''
-    if (save_checkpoint):
-        # save the agent's two critics to file
-        torch.save({
-        'critic_1_state_dict': agent.critic_1.state_dict(),
-        'critic_2_state_dict': agent.critic_2.state_dict(),
-        }, agent_file)
-    ''' 
 
     if (save_checkpoint):
         checkpoint = {
