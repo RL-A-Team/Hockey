@@ -2,7 +2,8 @@ import numpy as np
 import argparse
 from typing import Dict, List, Optional
 
-import laserhockey
+from laserhockey import hockey_env as h_env
+
 
 from twisted.internet import reactor, task
 
@@ -284,7 +285,7 @@ escape.
                 self.quit()
 
 def main(opts):
-    controller = laserhockey.hockey_env.BasicOpponent(weak=False)
+    controller = h_env.BasicOpponent(weak=False)
     client = Client(username=opts.username,
                     controller=controller,
                     output_path=opts.output_path,
