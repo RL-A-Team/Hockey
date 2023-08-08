@@ -6,3 +6,4 @@ models/
 SAC/.DS_Store
 SAC/__pycache__/
 __pycache__/
+SAC/opponents/
