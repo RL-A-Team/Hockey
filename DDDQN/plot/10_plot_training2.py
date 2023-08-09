@@ -29,7 +29,7 @@ reward_t        = [5, 8, 17, 17, 16, 10, 14, 16, 12, 13, 19, 23, 21, 21, 11, 16,
 x = np.arange(1, len(reward_f1) + 1)
 
 # perform cubic spline interpolation
-x_new = np.linspace(x.min(), x.max(), 10)  # 300 represents number of points to make it smoother
+x_new = np.linspace(x.min(), x.max(), 10)  # 10 represents number of points to make it smoother
 spl_f1 = make_interp_spline(x, reward_f1, k=3)
 spl_f1_ft = make_interp_spline(x, reward_f1_ft, k=3)
 spl_f5_ft = make_interp_spline(x, reward_f5_ft, k=3)
@@ -111,30 +111,6 @@ regressor.fit(x_poly, reward_t)
 poly_reward_t = regressor.predict(x_poly)
 
 ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ## ##
-
-'''
-# Perform Linear Regression
-regressor = LinearRegression()
-
-regressor.fit(np.array(x_axis).reshape(-1, 1), reward_f1)
-poly_reward_f1 = regressor.predict(np.array(x_axis).reshape(-1, 1))
-
-regressor.fit(np.array(x_axis).reshape(-1, 1), reward_f1_ft)
-poly_reward_f1_ft = regressor.predict(np.array(x_axis).reshape(-1, 1))
-
-regressor.fit(np.array(x_axis).reshape(-1, 1), reward_f5_ft)
-poly_reward_f5_ft = regressor.predict(np.array(x_axis).reshape(-1, 1))
-
-regressor.fit(np.array(x_axis).reshape(-1, 1), reward_f7_ft)
-poly_reward_f7_ft = regressor.predict(np.array(x_axis).reshape(-1, 1))
-
-regressor.fit(np.array(x_axis).reshape(-1, 1), reward_f8_ft)
-poly_reward_f8_ft = regressor.predict(np.array(x_axis).reshape(-1, 1))
-
-regressor.fit(np.array(x_axis).reshape(-1, 1), reward_t)
-poly_reward_t = regressor.predict(np.array(x_axis).reshape(-1, 1))
-
-'''
 
 # Plot the regression lines
 plt.subplot(1, 2, 2)

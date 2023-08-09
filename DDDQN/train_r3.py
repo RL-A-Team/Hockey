@@ -5,7 +5,7 @@ from dddqn import DDDQNAgent
 import time
 import matplotlib.pyplot as plt
 
-agent_file = 'reward_f8_ft.pth'
+agent_file = 'reward_f1.pth'
 
 # hyperparameters
 weak_opponent = True
@@ -13,10 +13,10 @@ weak_opponent = True
 #game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_SHOOTING
 game_mode = h_env.HockeyEnv_BasicOpponent.NORMAL
 
-episodes = 40000
+episodes = 4000
 
 load_checkpoint = False
-save_checkpoint = True
+save_checkpoint = False
 visualize = False
 
 hidden_dim = [300, 300] # number of hidden layers of neural network
@@ -116,11 +116,13 @@ if __name__ == '__main__':
                 #factor = [1, 10, 1, 1]		# be in puck proximity :)      f5
                 #factor = [1, 100, 1, 10] 	# more proximity, also shoot towards goal   f6
                 #factor = [10, 10, 100, 1]	# be close, TOUCH, also win     f7
-                factor = [100, 10, 100, 1]	# win and touch!    f8
+                #factor = [100, 10, 100, 1]	# win and touch!    f8
                 #factor = [100, 100, 10, 10]	# win and be close!     f9
+                #factor = [0,10,100,0]   # fuck all, just touch the ball f10
+                factor = [0,100,0,0]    # fuck all, run to the ball     f11
                 
-                #reward = factor[0]*winner + factor[1]*closeness_puck + factor[2]*touch_puck + factor[3]*100*puck_direction  # every touch rewarded
-                reward = factor[0]*winner + factor[1]*closeness_puck + factor[2]*touch_puck*first_touch + factor[3]*100*puck_direction # only first touch rewarded     ft
+                reward = factor[0]*winner + factor[1]*closeness_puck + factor[2]*touch_puck + factor[3]*100*puck_direction  # every touch rewarded
+                #reward = factor[0]*winner + factor[1]*closeness_puck + factor[2]*touch_puck*first_touch + factor[3]*100*puck_direction # only first touch rewarded     ft
                 
                 #reward = 10*winner + 50*closeness_puck - (1-touch_puck) + (touch_puck*first_touch*step) + 100*puck_direction   t
 
