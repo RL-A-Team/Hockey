@@ -9,6 +9,7 @@ class RemoteSACAgent(SACAgent, RemoteControllerInterface):
 
     def __init__(self, loaded, **kwargs):
         self.loaded = loaded
+        self.loaded.set_deterministic(True)
         RemoteControllerInterface.__init__(self, identifier='SAC')
 
     def remote_act(self, state):
@@ -16,7 +17,7 @@ class RemoteSACAgent(SACAgent, RemoteControllerInterface):
 
 
 if __name__ == '__main__':
-    loaded = pickle.load(open('kristina_kleine_welt/sac_model_20230808T161635_10178.pkl', 'rb'))
+    loaded = pickle.load(open('../kristina_kleine_welt/final_sac_agent.pkl', 'rb'))
     controller = RemoteSACAgent(loaded = loaded)
     
 

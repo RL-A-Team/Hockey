@@ -1,7 +1,9 @@
 import os
 import pickle
+import random
 
 import numpy as np
+import pandas as pd
 from laserhockey import hockey_env as h_env
 from argparse import ArgumentParser
 from sac import SACAgent
@@ -12,23 +14,26 @@ import utils
 parser = ArgumentParser()
 parser.add_argument('--render', action='store_true',
                     help='Render the training process (significantly increases running time)')
-parser.add_argument('--episodes', type=int, default=1500, help='Number of episodes to train')
+parser.add_argument('--episodes', type=int, default=4000, help='Number of episodes to train')
 parser.add_argument('--steps', type=int, default=500, help='Number of maximal steps per episode')
-parser.add_argument('--mode', type=str, default='d', help='Training mode: d - defense, s - shooting, n - normal')
+parser.add_argument('--mode', type=str, default='normal', help='Training mode: d - defense, s - shooting, n - normal')
 parser.add_argument('--model', type=str, default=None, help='Path to pretrained model to load')
 parser.add_argument('--deterministic', action='store_true', help='Choose deterministic action (for evaluation)')
 parser.add_argument('--reward', type=int, default=0, help='Code of reward to use')
-parser.add_argument('--randomopponentdir', type=str, default=None, help='Directory to pick an random agent as opponent')
+parser.add_argument('--randomopponentdir', type=str, default=None,
+                    help='Directory to pick an random agent from as opponent (overwrites the --strong flag)')
+parser.add_argument('--strong', action='store_true', help='Use strong basic opponent (else weak basic opponent)')
+parser.add_argument('--use_data', action='store_true', help='Use training data obtained in the tournament')
 
 # SAC hyperparameter
-parser.add_argument('--autotune', action='store_true', help='Autotune the entropy value')
+parser.add_argument('--autotune', action='store_true', help='Autotune the entropy value (overwrites the alpha value)')
 parser.add_argument('--prb', action='store_true', help='Use Prioritized Replay Buffer')
 parser.add_argument('--alpha', type=float, default=0.2, help='Alpha value for the SAC model')
 parser.add_argument('--tau', type=float, default=5e-3, help='Tau value for the SAC model')
 parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate')
 parser.add_argument('--discount', type=float, default=0.99, help='Discount factor')
-parser.add_argument('--batchsize', type=float, default=256, help='Batch size')
-parser.add_argument('--loss', type=str, default='l1', help='Loss of the Critic Network (either l1 or l2)')
+parser.add_argument('--batchsize', type=int, default=128, help='Batch size')
+parser.add_argument('--loss', type=str, default='l2', help='Loss of the Critic Network (either l1 or l2)')
 parser.add_argument('--gradientsteps', type=int, default=16, help='Gradient update steps after each rollout')
 
 opts = parser.parse_args()
@@ -45,6 +50,7 @@ def print_opts(opts):
     print(f'Steps: {opts.steps}')
     print('')
     print(f'Load model: {opts.model}')
+    print(f'Use training data: {opts.use_data}')
     print('')
     print(f'Alpha: {opts.alpha}')
     print(f'Tau: {opts.tau}')
@@ -72,7 +78,7 @@ def evaluate(agent, env, render):
     eval_win = []
     eval_lose = []
 
-    for eval_step in range(25):
+    for eval_step in range(100):
         state, info = env.reset()
         obs_agent2 = env.obs_agent_two()
 
@@ -81,7 +87,6 @@ def evaluate(agent, env, render):
 
         for t in range(500):
             a1 = agent.select_action(state)
-
             a2 = opponent.act(obs_agent2)
 
             next_state, raw_reward, done, _, info = env.step(np.hstack([a1, a2]))
@@ -103,6 +108,128 @@ def evaluate(agent, env, render):
     agent.set_deterministic(False)
 
     return percent_win, percent_lose
+
+
+def calculate_reward(reward_idx, raw_reward, info, first_touched_step, last_touched_step, first_touch):
+    if last_touched_step is not None:
+        last_touched_step += 1
+        first_touched_step += 1
+    if info['reward_touch_puck'] == 1:
+        last_touched_step = 0
+        first_touched_step = 0
+
+    if last_touched_step is not None and reward_idx in [1, 2, 3, 4, 5, 6]:
+        # negative gompertz, use time steps since last touch
+        decrease_touch = 1 - 0.99 * np.exp(-6 * np.exp(-0.3 * last_touched_step))
+    elif first_touched_step is not None and reward_idx in [7, 8, 9, 12, 13, 15, 16]:
+        # negative gompertz, use time steps since first touch
+        decrease_touch = 1 - 0.99 * np.exp(-6 * np.exp(-0.3 * first_touched_step))
+    else:
+        decrease_touch = 0
+
+    if reward_idx == 0:
+        reward = raw_reward
+    elif reward_idx == 1:
+        reward = raw_reward + 4 * info["reward_closeness_to_puck"] + 5 * decrease_touch + \
+                 5 * info["reward_puck_direction"]
+    elif reward_idx == 2:
+        reward = raw_reward + 4 * info["reward_closeness_to_puck"] + decrease_touch + 5 * info["reward_puck_direction"]
+    elif reward_idx == 3:
+        reward = raw_reward + 4 * info["reward_closeness_to_puck"] + decrease_touch + info["reward_puck_direction"]
+    elif reward_idx == 4:
+        reward = raw_reward + 4 * info["reward_closeness_to_puck"] + decrease_touch + 2.5 * info[
+            "reward_puck_direction"]
+    elif reward_idx == 5:
+        reward = raw_reward + 4 * info["reward_closeness_to_puck"] + 2.5 * decrease_touch + \
+                 5 * info["reward_puck_direction"]
+    elif reward_idx == 6:
+        reward = raw_reward + 4 * info["reward_closeness_to_puck"] + 0.5 * decrease_touch
+    elif reward_idx == 7:
+        reward = raw_reward + 4 * info["reward_closeness_to_puck"] + decrease_touch
+    elif reward_idx == 8:
+        reward = raw_reward + 4 * info["reward_closeness_to_puck"] + 2.5 * decrease_touch
+    elif reward_idx == 9:
+        reward = raw_reward + 4 * info["reward_closeness_to_puck"] + 0.5 * decrease_touch
+    elif reward_idx == 10:
+        factor = [1, 10, 100, 1]
+        reward = factor[0] * info['winner'] + \
+                 factor[1] * info['reward_closeness_to_puck'] + \
+                 factor[2] * info['reward_touch_puck'] + \
+                 factor[3] * 100 * info['reward_puck_direction']
+    elif reward_idx == 11:
+        factor = [2, 5, 0.5, 0]
+        reward = factor[0] * info['winner'] + \
+                 factor[1] * info['reward_closeness_to_puck'] + \
+                 factor[2] * info['reward_touch_puck'] * first_touch + \
+                 factor[3] * info['reward_puck_direction']
+    elif reward_idx == 12:
+        reward = raw_reward + 4 * info["reward_closeness_to_puck"] + 5 * decrease_touch + \
+                 10 * info['reward_puck_direction']
+    elif reward_idx == 13:
+        reward = 10 * info['winner'] + 5 * info['reward_closeness_to_puck'] + \
+                 0.2 * (1 - info['reward_touch_puck']) + decrease_touch
+    elif reward_idx == 14:
+        reward = 10 * info['winner'] + 5 * info['reward_closeness_to_puck'] - \
+                 0.2 * (1 - info['reward_touch_puck']) + 20 * info['reward_touch_puck'] * first_touch + \
+                 100 * info['reward_puck_direction']
+    elif reward_idx == 15:
+        reward = 10 * info['winner'] + 5 * info['reward_closeness_to_puck'] - \
+                 0.2 * (1 - info['reward_touch_puck']) + 20 * decrease_touch + 100 * info['reward_puck_direction']
+    elif reward_idx == 16:
+        reward = 10 * info['winner'] + 5 * info['reward_closeness_to_puck'] - \
+                 1 * (1 - info['reward_touch_puck']) + decrease_touch + 50 * info['reward_puck_direction']
+    elif reward_idx == 17:
+        reward = 10 * info['winner'] + 10 * info['reward_closeness_to_puck'] - \
+                 5 * (1 - info['reward_touch_puck']) + 5 * info['reward_touch_puck'] * first_touch + \
+                 50 * info['reward_puck_direction']
+    elif reward_idx == 18:
+        reward = 10 * info['winner'] + 10 * info['reward_closeness_to_puck'] - \
+                 5 * (1 - info['reward_touch_puck']) + 5 * info['reward_touch_puck'] * first_touch + \
+                 100 * info['reward_puck_direction']
+    elif reward_idx == 19:
+        reward = 10 * info['winner'] + 3 * info['reward_closeness_to_puck'] - \
+                 0.2 * (1 - info['reward_touch_puck']) + 0.2 * info['reward_touch_puck'] * first_touch + \
+                 100 * info['reward_puck_direction']
+
+    return reward, 1 - info['reward_touch_puck'], last_touched_step, first_touched_step
+
+
+def add_training_data(training_files, reward_idx, agent):
+    training_file = random.choice(training_files)
+    data = pd.read_csv(f'training_data/{training_file}')
+
+    # steps since the agent touched the ball the last time
+    last_touched_step = None
+    # steps since the agent touched the ball the first time
+    first_touched_step = None
+    # first time touching the ball
+    first_touch = 1
+    for step in range(1, len(data)):
+        state = np.array(data.loc[step - 1]['observation'][1:-1].split(','), dtype=np.float32)
+        a1 = np.array(data.loc[step - 1]['action'][1:-1].split(','), dtype=np.float32)
+
+        next_state = np.array(data.loc[step]['observation'][1:-1].split(','), dtype=np.float32)
+
+        # calculate standard reward of the environment
+        if data.loc[step]['winner'] == 1:
+            raw_reward = 10
+        elif data.loc[step]['winner'] == -1:
+            raw_reward = -10
+        else:
+            raw_reward = 0
+        raw_reward += data.loc[step]['reward_closeness_to_puck']
+        done = data.loc[step]['done']
+        info = {'winner': data.loc[step]['winner'],
+                'reward_closeness_to_puck': data.loc[step]['reward_closeness_to_puck'],
+                'reward_touch_puck': data.loc[step]['reward_touch_puck'],
+                'reward_puck_direction': data.loc[step]['reward_puck_direction']}
+
+        reward, first_touch, last_touched_step, first_touched_step = \
+            calculate_reward(reward_idx, raw_reward, info, first_touched_step, last_touched_step, first_touch)
+        agent.store_transition((state, a1, reward, next_state, done))
+
+        if done:
+            break
 
 
 if __name__ == '__main__':
@@ -143,23 +270,21 @@ if __name__ == '__main__':
     eval_percent_win = []
     eval_percent_lose = []
 
-    for episode in range(opts.episodes):
+    if opts.use_data:
+        training_files = os.listdir('training_data')
+        training_files.remove('.DS_Store')
+        training_files.remove('logs')
+
+    # until episodes+1 to have a final evaluation
+    for episode in range(opts.episodes+1):
         print('')
         print(f'Episode {episode}')
         state, info = env.reset()
         obs_agent2 = env.obs_agent_two()
 
-        # select random opponent if desired, else use basic weak opponent
+        # select random opponent if desired, else use basic strong or weak opponent
         if opts.randomopponentdir is not None:
             opponents = os.listdir(opts.randomopponentdir)
-            opponents.append('weak')
-            opponents.append('strong')
-            opponents.append('strong')
-            opponents.append('strong')
-            opponents.append('strong')
-            opponents.append('strong')
-            opponents.append('strong')
-            opponents.append('strong')
             choice = np.random.choice(opponents)
 
             if choice == 'weak':
@@ -167,30 +292,35 @@ if __name__ == '__main__':
             elif choice == 'strong':
                 opponent = h_env.BasicOpponent(weak=False)
             else:
-                try:
-                    opponent = pickle.load(open(f'{opts.randomopponentdir}/{choice}', 'rb'))
-                except:
-                    opponent = h_env.BasicOpponent(weak=False)
+                opponent = pickle.load(open(f'{opts.randomopponentdir}/{choice}', 'rb'))
 
             print('--------------------------------------')
             print(f'Random chosen opponent: {choice}')
             print('--------------------------------------')
             print('')
+        elif opts.strong:
+            opponent = h_env.BasicOpponent(weak=False)
+            print('Chosen opponent: Strong Basic Opponent')
         else:
             opponent = h_env.BasicOpponent(weak=True)
 
         episode_rewards = []
         episode_win = []
         episode_lose = []
+
+        if opts.use_data:
+            add_training_data(training_files, opts.reward, agent)
+
+        # steps since the agent touched the ball the last time
         last_touched_step = None
+        # steps since the agent touched the ball the first time
         first_touched_step = None
-
-        touched = 0
-        first_time_touch = 1
-
+        # first time touching the ball
+        first_touch = 1
         for step in range(opts.steps):
             a1 = agent.select_action(state)
 
+            # get action from opponent depends if it its a basic opponent or a trained one
             if hasattr(opponent, 'act'):
                 a2 = opponent.act(obs_agent2)
             else:
@@ -198,70 +328,8 @@ if __name__ == '__main__':
 
             next_state, raw_reward, done, _, info = env.step(np.hstack([a1, a2]))
 
-            # reward = r
-            if last_touched_step is not None:
-                last_touched_step += 1
-                first_touched_step += 1
-            if info['reward_touch_puck'] == 1:
-                last_touched_step = 0
-                first_touched_step = 0
-
-            if last_touched_step is not None and opts.reward in [1, 2, 3, 4, 5, 6]:
-                # negative gompertz, use time since last touch
-                decrease_touch = 1 - 0.99 * np.exp(-6 * np.exp(-0.3 * last_touched_step))
-            elif first_touched_step is not None and opts.reward in [7, 8, 9]:
-                # negative gompertz, use time since first touch
-                decrease_touch = 1 - 0.99 * np.exp(-6 * np.exp(-0.3 * first_touched_step))
-            else:
-                decrease_touch = 0
-
-            if opts.reward == -1:
-                touched = max(touched, info['reward_touch_puck'])
-
-                reward = (
-                        raw_reward
-                        + 5 * info['reward_closeness_to_puck']
-                        - (1 - touched) * 0.1
-                        + touched * first_time_touch * 0.1 * step
-                )
-                first_time_touch = 1 - touched
-            elif opts.reward == 0:
-                reward = raw_reward
-            elif opts.reward == 1:
-                # still very close to middle line, but better
-                reward = raw_reward + 4 * info["reward_closeness_to_puck"] + 5 * decrease_touch + \
-                         5 * info["reward_puck_direction"]
-            elif opts.reward == 2:
-                # goes directly to middle line
-                reward = raw_reward + 4 * info["reward_closeness_to_puck"] + decrease_touch + 5 * info["reward_puck_direction"]
-            elif opts.reward == 3:
-                # goes directly to middle line
-                reward = raw_reward + 4 * info["reward_closeness_to_puck"] + decrease_touch + info["reward_puck_direction"]
-            elif opts.reward == 4:
-                # sometimes does not even touch the ball (but does not go to middle line)
-                reward = raw_reward + 4 * info["reward_closeness_to_puck"] + decrease_touch + 2.5 * info["reward_puck_direction"]
-            elif opts.reward == 5:
-                # goes directly to middle line
-                reward = raw_reward + 4 * info["reward_closeness_to_puck"] + 2.5 * decrease_touch + \
-                         5 * info["reward_puck_direction"]
-            elif opts.reward == 6:
-                # may work with more training
-                reward = raw_reward + 4 * info["reward_closeness_to_puck"] + 0.5 * decrease_touch
-            elif opts.reward == 7:
-                # may work with more training
-                reward = raw_reward + 4 * info["reward_closeness_to_puck"] + decrease_touch
-            elif opts.reward == 8:
-                # may also work
-                reward = raw_reward + 4 * info["reward_closeness_to_puck"] + 2.5 * decrease_touch
-            elif opts.reward == 9:
-                # may also work
-                reward = raw_reward + 4 * info["reward_closeness_to_puck"] + 0.5 * decrease_touch
-            elif opts.reward == 10:
-                factor = [1, 10, 100, 1]
-                reward = factor[0] * info['winner'] + \
-                         factor[1] * info['reward_closeness_to_puck'] + \
-                         factor[2] * info['reward_touch_puck'] + \
-                         factor[3] * 100 * info['reward_puck_direction']
+            reward, first_touch, last_touched_step, first_touched_step = \
+                calculate_reward(opts.reward, raw_reward, info, first_touched_step, last_touched_step, first_touch)
 
             episode_rewards.append(reward)
             episode_win.append(1 if info['winner'] == 1 else 0)

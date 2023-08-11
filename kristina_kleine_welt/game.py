@@ -29,7 +29,7 @@ class Game:
                        *,
                        next_obs : List[float],
                        next_action : List[float],
-                       r : int,
+                       r : float,
                        done : int,
                        trunc : int,
                        info : Dict

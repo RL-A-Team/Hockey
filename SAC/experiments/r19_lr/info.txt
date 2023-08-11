@@ -1,0 +1,189 @@
+--------------------------------------
+---------TRAINING PARAMETER-----------
+Training mode: normal
+Reward: 19
+Epsiodes: 4000
+Steps: 500
+
+Load model: None
+Use training data: False
+
+Alpha: 0.2
+Tau: 0.005
+Learning rate: 0.001
+Discount factor: 0.99
+Batch size: 128
+Autotune: True
+Prioritized Replay Buffer: False
+Loss: l2
+Gradient steps: 16
+--------------------------------------
+Statistics saved in file eval/sac_stats_20230810T164520_97700.csv
+Plots saved in file eval/sac_plots_20230810T164520_97700.pdf'
+
+--------------------------------------
+COPY COMMANDS
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_stats_20230810T164520_97700.csv .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_plots_20230810T164520_97700.pdf .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/models/sac_model_20230810T164520_97700.pkl .
+--------------------------------------
+
+
+(base) KRISTINAS-MBP:Hockey kristina$ python3 SAC/trainSAC.py --autotune --reward 19 --model models/sac_model_20230810T164520_97700.pkl --strong
+--------------------------------------
+---------TRAINING PARAMETER-----------
+Training mode: normal
+Reward: 19
+Epsiodes: 4000
+Steps: 500
+
+Load model: models/sac_model_20230810T164520_97700.pkl
+Use training data: False
+
+Alpha: 0.2
+Tau: 0.005
+Learning rate: 0.001
+Discount factor: 0.99
+Batch size: 128
+Autotune: True
+Prioritized Replay Buffer: False
+Loss: l2
+Gradient steps: 16
+--------------------------------------
+Statistics saved in file eval/sac_stats_20230810T175800_98756.csv
+Plots saved in file eval/sac_plots_20230810T175800_98756.pdf'
+
+--------------------------------------
+COPY COMMANDS
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_stats_20230810T175800_98756.csv .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_plots_20230810T175800_98756.pdf .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/models/sac_model_20230810T175800_98756.pkl .
+--------------------------------------
+
+
+
+
+--------------------------------------
+---------TRAINING PARAMETER-----------
+Training mode: normal
+Reward: 19
+Epsiodes: 4000
+Steps: 500
+
+Load model: None
+Use training data: False
+
+Alpha: 0.2
+Tau: 0.005
+Learning rate: 0.0001
+Discount factor: 0.99
+Batch size: 128
+Autotune: True
+Prioritized Replay Buffer: False
+Loss: l2
+Gradient steps: 16
+--------------------------------------
+Statistics saved in file eval/sac_stats_20230810T164712_10593.csv
+Plots saved in file eval/sac_plots_20230810T164712_10593.pdf'
+
+--------------------------------------
+COPY COMMANDS
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_stats_20230810T164712_10593.csv .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_plots_20230810T164712_10593.pdf .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/models/sac_model_20230810T164712_10593.pkl .
+--------------------------------------
+
+(base) KRISTINAS-MBP:Hockey kristina$ python3 SAC/trainSAC.py --autotune --reward 19 --lr 1e-4 --model models/sac_model_20230810T164712_10593.pkl --strong
+--------------------------------------
+---------TRAINING PARAMETER-----------
+Training mode: normal
+Reward: 19
+Epsiodes: 4000
+Steps: 500
+
+Load model: models/sac_model_20230810T164712_10593.pkl
+Use training data: False
+
+Alpha: 0.2
+Tau: 0.005
+Learning rate: 0.0001
+Discount factor: 0.99
+Batch size: 128
+Autotune: True
+Prioritized Replay Buffer: False
+Loss: l2
+Gradient steps: 16
+--------------------------------------
+Statistics saved in file eval/sac_stats_20230810T180156_63182.csv
+Plots saved in file eval/sac_plots_20230810T180156_63182.pdf'
+
+--------------------------------------
+COPY COMMANDS
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_stats_20230810T180156_63182.csv .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_plots_20230810T180156_63182.pdf .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/models/sac_model_20230810T180156_63182.pkl .
+--------------------------------------
+
+
+
+--------------------------------------
+---------TRAINING PARAMETER-----------
+Training mode: normal
+Reward: 19
+Epsiodes: 4000
+Steps: 500
+
+Load model: None
+Use training data: False
+
+Alpha: 0.2
+Tau: 0.005
+Learning rate: 1e-05
+Discount factor: 0.99
+Batch size: 128
+Autotune: False
+Prioritized Replay Buffer: False
+Loss: l2
+Gradient steps: 16
+--------------------------------------
+Statistics saved in file eval/sac_stats_20230810T164728_70281.csv
+Plots saved in file eval/sac_plots_20230810T164728_70281.pdf'
+
+--------------------------------------
+COPY COMMANDS
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_stats_20230810T164728_70281.csv .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_plots_20230810T164728_70281.pdf .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/models/sac_model_20230810T164728_70281.pkl .
+--------------------------------------
+
+(base) KRISTINAS-MBP:Hockey kristina$ python3 SAC/trainSAC.py --reward 19 --lr 1e-5 --model models/sac_model_20230810T164728_70281.pkl --strong
+--------------------------------------
+---------TRAINING PARAMETER-----------
+Training mode: normal
+Reward: 19
+Epsiodes: 4000
+Steps: 500
+
+Load model: models/sac_model_20230810T164728_70281.pkl
+Use training data: False
+
+Alpha: 0.2
+Tau: 0.005
+Learning rate: 1e-05
+Discount factor: 0.99
+Batch size: 128
+Autotune: False
+Prioritized Replay Buffer: False
+Loss: l2
+Gradient steps: 16
+--------------------------------------
+Statistics saved in file eval/sac_stats_20230810T180203_39608.csv
+Plots saved in file eval/sac_plots_20230810T180203_39608.pdf'
+
+--------------------------------------
+COPY COMMANDS
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_stats_20230810T180203_39608.csv .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_plots_20230810T180203_39608.pdf .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/models/sac_model_20230810T180203_39608.pkl .
+--------------------------------------
+
