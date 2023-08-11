@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 from laserhockey import hockey_env as h_env
-from dddqn import DDDQNAgent
+from ddqn import DDDQNAgent
 
 import time
 import sys
