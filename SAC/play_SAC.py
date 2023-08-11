@@ -12,7 +12,11 @@ parser.add_argument('--strong', action='store_true', help='Use strong basic oppo
 opts = parser.parse_args()
 
 if __name__ == '__main__':
-    agent = pickle.load(open(opts.model, 'rb'))
+    try:
+        agent = pickle.load(open(opts.model, 'rb'))
+    except:
+        agent = pickle.load(open(opts.model.split('/')[1], 'rb'))
+
     agent.set_deterministic(True)
 
     env = h_env.HockeyEnv()
