@@ -344,7 +344,7 @@ class SACAgent():
         a = torch.FloatTensor(np.stack(transitions[:, 1])[:, None]).squeeze(dim=1)
         r = torch.FloatTensor(np.stack(transitions[:, 2])[:, None])
         sp = torch.FloatTensor(np.stack(transitions[:, 3]))
-        n = torch.FloatTensor(np.stack(transitions[:, 4])[:, None])
+        d = torch.FloatTensor(np.stack(transitions[:, 4])[:, None])
 
         with torch.no_grad():
             next_actions, log_prob, _ = self.actor.sample(sp)
@@ -353,7 +353,7 @@ class SACAgent():
                 self.critic_1(sp, next_actions),
                 self.critic_2(sp, next_actions),
             ) - self.alpha * log_prob
-            q_target = r + (1 - n) * self.discount * target_q_values
+            q_target = r + (1 - d) * self.discount * target_q_values
 
         # Update Critic Networks
         critic1_pred = self.critic_1(s, a)
