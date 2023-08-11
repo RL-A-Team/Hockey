@@ -11,9 +11,9 @@ The tournament results can be found here: [RL2023 Hockey Tournament](http://al-h
 
 We implemented three different algorithms to solve the task:
 
-- DDQN
-- DDPG
-- SAC
+- Deep Deterministic Policy Gradient (DDPG)
+- Double Deep Q-Learning (DDQN)
+- Soft Actor-Critic (SAC)
 
 # Use 
 

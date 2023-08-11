@@ -11,9 +11,16 @@ from laserhockey import hockey_env as h_env
 from DDQN.ddqn import DDDQNAgent
 from SAC.sac import SACAgent
 
+# for saving gif :)
+from PIL import Image
+import imageio
+num_frames = 100  # number of captured frames
+step_interval = 1
+output_gif_path = 'compete.gif'
+frames = []
 
-agent_file_1 = 'DDQN/agent_ddqn.pth'    # .pth file
-agent_file_2 = 'SAC/agent_sac.pkl'      # .pkl file
+agent_file_1 = 'SAC/agent_sac.pkl'      # .pkl file
+agent_file_2 = 'DDQN/agent_ddqn.pth'    # .pth file
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -22,7 +29,7 @@ agent_file_2 = 'SAC/agent_sac.pkl'      # .pkl file
 #                                                                             #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
                                                                                         #                                                                                       
-episodes = 10                                                                          #
+episodes = 3                                                                          #
 visualize = True                                                                        #
                                                                                         #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -34,9 +41,23 @@ if __name__ == '__main__':
 
     env = h_env.HockeyEnv(mode=h_env.HockeyEnv_BasicOpponent.NORMAL)
 
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                             #
 #                                 load agent 1                                #
+#                                                                             #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+                                                                        #    
+    agent_1 = SACAgent(state_dim = env.observation_space.shape,         #                              
+                         action_dim = env.action_space)                 #
+                                                                        #
+    agent_1 = pickle.load(open(agent_file_1, 'rb'))                     #
+                                                                        #    
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#                                                                             #
+#                                 load agent 2                                #
 #                                                                             #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
                                                                                                         #    
@@ -50,7 +71,7 @@ if __name__ == '__main__':
     max_size = 1000000      # maximum capacity of replay buffer                                         #
                                                                                                         #
     # initialize agent with state and action dimensions                                                 #   
-    agent_1 = DDDQNAgent(state_dim = env.observation_space.shape,                                       #
+    agent_2 = DDDQNAgent(state_dim = env.observation_space.shape,                                       #
                          action_dim = env.action_space,                                                 #   
                          n_actions = 4,                                                                 #
                          hidden_dim = hidden_dim,                                                       #
@@ -63,30 +84,17 @@ if __name__ == '__main__':
                          max_size = max_size)                                                           #
                                                                                                         #
     # load agent from the agent_file                                                                    #
-    checkpoint = torch.load(agent_file_1)                                                               #
-    agent_1.critic_1.load_state_dict(checkpoint['critic_1_state_dict'])                                 #
-    agent_1.critic_2.load_state_dict(checkpoint['critic_2_state_dict'])                                 #
-    agent_1.critic_target_1.load_state_dict(checkpoint['critic_target_1_state_dict'])                   #
-    agent_1.critic_target_2.load_state_dict(checkpoint['critic_target_2_state_dict'])                   #
-    agent_1.actor.load_state_dict(checkpoint['actor_state_dict'])                                       #
-    agent_1.critic_optimizer_1.load_state_dict(checkpoint['critic_optimizer_1_state_dict'])             #
-    agent_1.critic_optimizer_2.load_state_dict(checkpoint['critic_optimizer_2_state_dict'])             #
-    agent_1.actor_optimizer.load_state_dict(checkpoint['actor_optimizer_state_dict'])                   #
+    checkpoint = torch.load(agent_file_2)                                                               #
+    agent_2.critic_1.load_state_dict(checkpoint['critic_1_state_dict'])                                 #
+    agent_2.critic_2.load_state_dict(checkpoint['critic_2_state_dict'])                                 #
+    agent_2.critic_target_1.load_state_dict(checkpoint['critic_target_1_state_dict'])                   #
+    agent_2.critic_target_2.load_state_dict(checkpoint['critic_target_2_state_dict'])                   #
+    agent_2.actor.load_state_dict(checkpoint['actor_state_dict'])                                       #
+    agent_2.critic_optimizer_1.load_state_dict(checkpoint['critic_optimizer_1_state_dict'])             #
+    agent_2.critic_optimizer_2.load_state_dict(checkpoint['critic_optimizer_2_state_dict'])             #
+    agent_2.actor_optimizer.load_state_dict(checkpoint['actor_optimizer_state_dict'])                   #
                                                                                                         #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#                                                                             #
-#                                 load agent 2                                #
-#                                                                             #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-                                                                        #    
-    agent_2 = SACAgent(state_dim = env.observation_space.shape,         #                              
-                         action_dim = env.action_space)                 #
-                                                                        #
-    agent_2 = pickle.load(open(agent_file_2, 'rb'))                     #
-                                                                        #    
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
     episode_counter = 0
 
@@ -108,9 +116,10 @@ if __name__ == '__main__':
         for step in range(1000):
             if (not done):
                 # agent 1 action
-                a1 = agent_1.select_action(state).detach().numpy()[0]
+                a1 = agent_1.select_action(state)
+
                 # agent 2 action
-                a2 = agent_2.select_action(state)
+                a2 = agent_2.select_action(obs_agent2).detach().numpy()[0]
 
                 # take a step in the environment
                 obs, reward, done, _, info = env.step(np.hstack([a1, a2]))
@@ -120,7 +129,14 @@ if __name__ == '__main__':
                 # visualization
                 if (visualize):
                     time.sleep(0.01)
+
                     env.render()
+
+                    # collect gif frames
+                    if (step + 1) % step_interval == 0:
+                        frame = env.render(mode='rgb_array')
+                        pil_frame = Image.fromarray(frame)
+                        frames.append(pil_frame)
 
                 # update current state
                 state = obs
@@ -138,11 +154,14 @@ if __name__ == '__main__':
     env.close()
 
     print()
-    print(f'left (DDQN wins): {total_wins}')
-    print(f'right (SAC) wins: {total_losses}')
+    print(f'left (SAC wins): {total_wins}')
+    print(f'right (DDQN) wins: {total_losses}')
     print(f'Draws: {episodes - (total_wins + total_losses)}')
 
     print()
     end_time = time.time()
     execution_time = end_time - start_time
     print(f"Program execution took {execution_time:.4f} seconds.")
+
+    # save gif
+    imageio.mimsave(output_gif_path, frames, duration=0.005)
