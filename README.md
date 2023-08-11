@@ -17,12 +17,12 @@ We implemented three different algorithms to solve the task:
 
 # Use 
 
-Our trained agents can be found in their respective folders. (agent\_\<algorithm\>.\<pke/pth\>) 
+Our trained agents can be found in their respective folders. (agent\_\<algorithm\>.\<pkl/pth\>) 
 
-These trained agents can be used for playing airhockey by running their respective play\_\<algorithm\>.py-function.
+These trained agents can be used for playing airhockey by running their respective play\_\<algorithm\>.py-script.
 New agents can be trained with train\_\<algorithm\>.py.
 
-The definition of the agent itself can be found in agent\_\<algorithm\>.py.
+The definition of the agent itself can be found in agent\_\<algorithm\>.\<pkl/pth\>.
 
 # Compare agents
 
