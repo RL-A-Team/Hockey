@@ -1,3 +1,7 @@
+preprocess_training_data.py
+training_data/
+training_data_preprocessed/
+logs/
 eval/
 models/
 .DS_Store

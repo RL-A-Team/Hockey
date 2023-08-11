@@ -1,0 +1,94 @@
+--------------------------------------
+---------TRAINING PARAMETER-----------
+Training mode: normal
+Reward: 0
+Epsiodes: 4000
+Steps: 500
+
+Load model: None
+Use training data: False
+
+Alpha: 0.2
+Tau: 0.005
+Learning rate: 0.001
+Discount factor: 0.99
+Batch size: 128
+Autotune: True
+Prioritized Replay Buffer: True
+Loss: l2
+Gradient steps: 16
+--------------------------------------
+Statistics saved in file eval/sac_stats_20230810T144152_425.csv
+Plots saved in file eval/sac_plots_20230810T144152_425.pdf'
+
+--------------------------------------
+COPY COMMANDS
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_stats_20230810T144152_425.csv .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_plots_20230810T144152_425.pdf .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/models/sac_model_20230810T144152_425.pkl .
+--------------------------------------
+
+
+
+
+--------------------------------------
+---------TRAINING PARAMETER-----------
+Training mode: normal
+Reward: 0
+Epsiodes: 4000
+Steps: 500
+
+Load model: None
+Use training data: False
+
+Alpha: 0.2
+Tau: 0.005
+Learning rate: 0.0001
+Discount factor: 0.99
+Batch size: 128
+Autotune: True
+Prioritized Replay Buffer: True
+Loss: l2
+Gradient steps: 16
+--------------------------------------
+Statistics saved in file eval/sac_stats_20230810T144308_56837.csv
+Plots saved in file eval/sac_plots_20230810T144308_56837.pdf'
+
+--------------------------------------
+COPY COMMANDS
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_stats_20230810T144308_56837.csv .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_plots_20230810T144308_56837.pdf .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/models/sac_model_20230810T144308_56837.pkl .
+--------------------------------------
+
+
+
+--------------------------------------
+---------TRAINING PARAMETER-----------
+Training mode: normal
+Reward: 0
+Epsiodes: 4000
+Steps: 500
+
+Load model: None
+Use training data: False
+
+Alpha: 0.2
+Tau: 0.005
+Learning rate: 1e-05
+Discount factor: 0.99
+Batch size: 128
+Autotune: True
+Prioritized Replay Buffer: True
+Loss: l2
+Gradient steps: 16
+--------------------------------------
+Statistics saved in file eval/sac_stats_20230810T144218_90896.csv
+Plots saved in file eval/sac_plots_20230810T144218_90896.pdf'
+
+--------------------------------------
+COPY COMMANDS
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_stats_20230810T144218_90896.csv .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_plots_20230810T144218_90896.pdf .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/models/sac_model_20230810T144218_90896.pkl .
+--------------------------------------

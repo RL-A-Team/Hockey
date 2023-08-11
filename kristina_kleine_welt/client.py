@@ -1,6 +1,7 @@
 import numpy as np
 import argparse
 from typing import Dict, List, Optional
+from numbers import Number
 
 import laserhockey
 
@@ -10,27 +11,30 @@ from network_interface import NetworkInterface, NetworkInterfaceConnectionError
 from game import Game
 from remoteControllerInterface import RemoteControllerInterface
 
+from csv import writer
+
 
 def parseOptions():
     parser = argparse.ArgumentParser(description='ALRL2023 Competition Client.',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-u', '--username', action='store',
-                         type=str, dest='username', default="",
-                         help='Username')
+                        type=str, dest='username', default="",
+                        help='Username')
     parser.add_argument('-o', '--output-path', action='store',
-                         type=str, dest='output_path', default="",
-                         help='Path in which games, etc. are stored')
+                        type=str, dest='output_path', default="",
+                        help='Path in which games, etc. are stored')
     parser.add_argument('--non-interactive', action='store_false',
-                         dest='interactive', default=True,
-                         help='Run in non-interactive mode')
+                        dest='interactive', default=True,
+                        help='Run in non-interactive mode')
     parser.add_argument('--op', action='store',
-                         type=str, dest='op', default='',
-                         help='What operation to run in non-interactive mode')
+                        type=str, dest='op', default='',
+                        help='What operation to run in non-interactive mode')
     parser.add_argument('--num-runs', action='store',
-                         type=int, dest='num_games', default=None,
-                         help='Number of runs per queuing')
+                        type=int, dest='num_games', default=None,
+                        help='Number of runs per queuing')
     args = parser.parse_args()
     return args
+
 
 class ClientOperationState:
     IDLE = 0
@@ -40,26 +44,31 @@ class ClientOperationState:
     PLAYING_DONE = 5
     PLAYING_QUIT = 6
 
-class Client:
 
-    __VERSION__ = 'ALRL2023_1.3'
+class Client:
+    __VERSION__ = 'ALRL2023_1.5'
 
     def __init__(self,
-                 username : str,
-                 password : str,
-                 controller : RemoteControllerInterface,
-                 output_path : str,
-                 interactive : bool = True,
-                 op : str = None,
-                 num_games : Optional[int] = None,
-                 server_addr : str = 'al-hockey.is.tuebingen.mpg.de',
-                 server_port : str = '33000',
-                ):
+                 username: str,
+                 password: str,
+                 controller: RemoteControllerInterface,
+                 output_path: str,
+                 interactive: bool = True,
+                 op: str = None,
+                 num_games: Optional[int] = None,
+                 server_addr: str = 'al-hockey.is.tuebingen.mpg.de',
+                 server_port: str = '33000',
+                 ):
 
         self.state = ClientOperationState.IDLE
 
         self.interactive = interactive
         self.op = op
+
+        self.store = False
+        self.file = None
+        self.round = 0
+        self.id = None
 
         self.username = username
         self.password = password
@@ -87,10 +96,10 @@ class Client:
         self.played_games = 0
 
         self.network_interface = NetworkInterface(
-                                                  client=self,
-                                                  server=server_addr,
-                                                  port=server_port
-                                                 )
+            client=self,
+            server=server_addr,
+            port=server_port
+        )
         self.network_interface.connect()
 
     def stop_queueing(self) -> None:
@@ -102,7 +111,7 @@ class Client:
             self.state = ClientOperationState.PLAYING_QUIT
         elif self.state == ClientOperationState.WAITING_FOR_GAME:
             self.waiting_for_game_loop.stop()
-            del(self.waiting_for_game_loop)
+            del (self.waiting_for_game_loop)
             self.state = ClientOperationState.PLAYING_QUIT
             d = self.network_interface.stop_queueing()
             if not self.interactive:
@@ -162,7 +171,7 @@ escape.
     # Functions called by network_interface
     def connection_error(self,
                          conn_err,
-                        ) -> None:
+                         ) -> None:
 
         if conn_err == NetworkInterfaceConnectionError.CONNECTING:
             print('Could not connect to server. Please try again later or contact the administrator')
@@ -179,6 +188,7 @@ escape.
         def f():
             if self.verbose:
                 print('Waiting for other player')
+
         if not self.state == ClientOperationState.PLAYING:
             self.state = ClientOperationState.WAITING_FOR_GAME
             self.waiting_for_game_loop = task.LoopingCall(f)
@@ -186,18 +196,27 @@ escape.
 
     # Game loop functions
     def game_starts(self,
-                    ob : List[float],
-                    info : Dict) -> None:
+                    ob: List[float],
+                    info: Dict) -> None:
 
         if self.verbose:
             print(f'New Game started ({info["id"]})')
             print(f'{info["player"][0]} vs {info["player"][1]}')
 
+        self.round = 1
+        self.id = info["id"]
+        if self.store:
+            self.file = f'{info["id"]}_round{self.round}_logs.csv'
+            with open(self.file, 'w') as f:
+                writer_object = writer(f)
+                writer_object.writerow(['observation', 'reward', 'done', 'trunc', 'winner', 'reward_closeness_to_puck',
+                                        'reward_touch_puck', 'reward_puck_direction', 'action'])
+
         self.state = ClientOperationState.PLAYING
 
         if hasattr(self, 'waiting_for_game_loop'):
             self.waiting_for_game_loop.stop()
-            del(self.waiting_for_game_loop)
+            del (self.waiting_for_game_loop)
 
         action = self.controller.remote_act(np.asarray(ob)).tolist()
 
@@ -206,38 +225,71 @@ escape.
                                  player_two=info["player"][1],
                                  fst_obs=ob,
                                  fst_action=action
-                                )
+                                 )
 
         self.network_interface.send_action(action)
 
+    @staticmethod  # This is a hack for the moment. Needs to be handled more generically
+    def validate_action(action):
+        is_valid = True
+        if not isinstance(action, list):
+            is_valid = False
+        if not len(action) == 4:
+            is_valid = False
+        if not all([isinstance(x, Number) for x in action]):
+            is_valid = False
+        return is_valid
+
     def step(self,
-             ob : List[float],
-             r : Optional[int] = None,
-             done : Optional[int] = None,
-             trunc : Optional[int] = None,
-             info : Optional[Dict] = None
-            ) -> None:
+             ob: List[float],
+             r: Optional[float] = None,
+             done: Optional[int] = None,
+             trunc: Optional[int] = None,
+             info: Optional[Dict] = None
+             ) -> None:
 
         action = self.controller.remote_act(np.asarray(ob)).tolist()
 
+        winner = info['winner']
+        reward_closeness_to_puck = info['reward_closeness_to_puck']
+        reward_touch_puck = info['reward_touch_puck']
+        reward_puck_direction = info['reward_puck_direction']
+
+        if self.store:
+            with open(self.file, 'a') as f:
+                writer_object = writer(f)
+                writer_object.writerow([ob, r, done, trunc, winner, reward_closeness_to_puck, reward_touch_puck,
+                                        reward_puck_direction, action])
+
+        if self.verbose and done:
+            print(f"Winner: {info['winner']}")
+            self.round += 1
+            if self.round <=4 and self.store:
+                self.file = f'{self.id}_round{self.round}_logs.csv'
+                with open(self.file, 'w') as f:
+                    writer_object = writer(f)
+                    writer_object.writerow(['observation', 'reward', 'done', 'trunc', 'winner', 'reward_closeness_to_puck',
+                                            'reward_touch_puck', 'reward_puck_direction', 'action'])
         try:
             self.current_game.add_transition(next_obs=ob,
-                                            next_action=action,
-                                            r=r,
-                                            done=done,
-                                            trunc=trunc,
-                                            info=info
-                                            )
-
-            self.network_interface.send_action(action)
+                                             next_action=action,
+                                             r=r,
+                                             done=done,
+                                             trunc=trunc,
+                                             info=info
+                                             )
+            if self.validate_action(action):
+                self.network_interface.send_action(action)
+            else:
+                raise ValueError("Not valid action: " + str(action))
         except:
-            # Game is None, probably due to apportion.
+            # Game is None, probably due to abortion.
             # Just skipping this async call of step
             pass
 
     def game_aborted(self,
-                     msg : str
-                    ) -> None:
+                     msg: str
+                     ) -> None:
 
         if self.verbose:
             print(msg)
@@ -251,24 +303,25 @@ escape.
             self._post_issue_remote_command()
 
     def game_done(self,
-                  ob : List[float],
-                  r : int,
-                  done : int,
-                  trunc : int,
-                  info : Dict,
-                  result : str
-                 ) -> None:
+                  ob: List[float],
+                  r: float,
+                  done: int,
+                  trunc: int,
+                  info: Dict,
+                  result: Dict
+                  ) -> None:
 
         if self.verbose:
-            print(f'{result["games_played"]} games played. You won {result["games_won"]} games. You lost {result["games_lost"]} games. {result["games_drawn"]} game(s) end in a draw.')
-
+            print(f"Winner: {info['winner']}")
+            print(
+                f'{result["games_played"]} games played. You won {result["games_won"]} games. You lost {result["games_lost"]} games. {result["games_drawn"]} game(s) end in a draw.')
         self.current_game.add_transition(next_obs=ob,
                                          next_action=None,
                                          r=r,
                                          done=done,
                                          trunc=trunc,
                                          info=info
-                                        )
+                                         )
         self.current_game.save(output_path=self.output_path)
         self.current_game = None
 
@@ -283,6 +336,7 @@ escape.
             else:
                 self.quit()
 
+
 def main(opts):
     controller = laserhockey.hockey_env.BasicOpponent(weak=False)
     client = Client(username=opts.username,
@@ -291,7 +345,8 @@ def main(opts):
                     interactive=opts.interactive,
                     op=opts.op,
                     num_games=opts.num_games
-                   )
+                    )
+
 
 if __name__ == '__main__':
     opts = parseOptions()

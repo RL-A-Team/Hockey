@@ -129,7 +129,6 @@ class NetworkInterface(pb.Referenceable):
                          info : Dict,
                          result : Dict
                         ) -> None:
-        print(type(r), r)
         self.client.game_done(ob, r, done, trunc, info, result)
 
     def remote_receive_observation(self,

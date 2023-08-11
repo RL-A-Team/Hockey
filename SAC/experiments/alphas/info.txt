@@ -1,0 +1,194 @@
+--------------------------------------
+---------TRAINING PARAMETER-----------
+Training mode: normal
+Reward: 0
+Epsiodes: 4000
+Steps: 500
+
+Load model: None
+Use training data: False
+
+Alpha: 0.2
+Tau: 0.005
+Learning rate: 0.001
+Discount factor: 0.99
+Batch size: 128
+Autotune: True
+Prioritized Replay Buffer: False
+Loss: l2
+Gradient steps: 16
+--------------------------------------
+Statistics saved in file eval/sac_stats_20230810T132354_96078.csv
+Plots saved in file eval/sac_plots_20230810T132354_96078.pdf'
+
+--------------------------------------
+COPY COMMANDS
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_stats_20230810T132354_96078.csv .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_plots_20230810T132354_96078.pdf .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/models/sac_model_20230810T132354_96078.pkl .
+--------------------------------------
+
+
+
+--------------------------------------
+---------TRAINING PARAMETER-----------
+Training mode: normal
+Reward: 0
+Epsiodes: 4000
+Steps: 500
+
+Load model: None
+Use training data: False
+
+Alpha: 0.1
+Tau: 0.005
+Learning rate: 0.001
+Discount factor: 0.99
+Batch size: 128
+Autotune: False
+Prioritized Replay Buffer: False
+Loss: l2
+Gradient steps: 16
+--------------------------------------
+
+Statistics saved in file eval/sac_stats_20230810T133111_75484.csv
+Plots saved in file eval/sac_plots_20230810T133111_75484.pdf'
+
+--------------------------------------
+COPY COMMANDS
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_stats_20230810T133111_75484.csv .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_plots_20230810T133111_75484.pdf .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/models/sac_model_20230810T133111_75484.pkl .
+--------------------------------------
+
+
+--------------------------------------
+---------TRAINING PARAMETER-----------
+Training mode: normal
+Reward: 0
+Epsiodes: 4000
+Steps: 500
+
+Load model: None
+Use training data: False
+
+Alpha: 0.2
+Tau: 0.005
+Learning rate: 0.001
+Discount factor: 0.99
+Batch size: 128
+Autotune: False
+Prioritized Replay Buffer: False
+Loss: l2
+Gradient steps: 16
+--------------------------------------
+Statistics saved in file eval/sac_stats_20230810T133219_25005.csv
+Plots saved in file eval/sac_plots_20230810T133219_25005.pdf'
+
+--------------------------------------
+COPY COMMANDS
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_stats_20230810T133219_25005.csv .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_plots_20230810T133219_25005.pdf .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/models/sac_model_20230810T133219_25005.pkl .
+--------------------------------------
+
+
+
+
+--------------------------------------
+---------TRAINING PARAMETER-----------
+Training mode: normal
+Reward: 0
+Epsiodes: 4000
+Steps: 500
+
+Load model: None
+Use training data: False
+
+Alpha: 0.3
+Tau: 0.005
+Learning rate: 0.001
+Discount factor: 0.99
+Batch size: 128
+Autotune: False
+Prioritized Replay Buffer: False
+Loss: l2
+Gradient steps: 16
+--------------------------------------
+Statistics saved in file eval/sac_stats_20230810T133213_28612.csv
+Plots saved in file eval/sac_plots_20230810T133213_28612.pdf'
+
+--------------------------------------
+COPY COMMANDS
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_stats_20230810T133213_28612.csv .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_plots_20230810T133213_28612.pdf .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/models/sac_model_20230810T133213_28612.pkl .
+--------------------------------------
+
+
+
+
+--------------------------------------
+---------TRAINING PARAMETER-----------
+Training mode: normal
+Reward: 0
+Epsiodes: 4000
+Steps: 500
+
+Load model: None
+Use training data: False
+
+Alpha: 0.4
+Tau: 0.005
+Learning rate: 0.001
+Discount factor: 0.99
+Batch size: 128
+Autotune: False
+Prioritized Replay Buffer: False
+Loss: l2
+Gradient steps: 16
+--------------------------------------
+Statistics saved in file eval/sac_stats_20230810T133254_14920.csv
+Plots saved in file eval/sac_plots_20230810T133254_14920.pdf'
+
+--------------------------------------
+COPY COMMANDS
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_stats_20230810T133254_14920.csv .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_plots_20230810T133254_14920.pdf .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/models/sac_model_20230810T133254_14920.pkl .
+--------------------------------------
+
+
+
+
+
+--------------------------------------
+---------TRAINING PARAMETER-----------
+Training mode: normal
+Reward: 0
+Epsiodes: 4000
+Steps: 500
+
+Load model: None
+Use training data: False
+
+Alpha: 0.5
+Tau: 0.005
+Learning rate: 0.001
+Discount factor: 0.99
+Batch size: 128
+Autotune: False
+Prioritized Replay Buffer: False
+Loss: l2
+Gradient steps: 16
+--------------------------------------
+Statistics saved in file eval/sac_stats_20230810T133246_57079.csv
+Plots saved in file eval/sac_plots_20230810T133246_57079.pdf'
+
+--------------------------------------
+COPY COMMANDS
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_stats_20230810T133246_57079.csv .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/eval/sac_plots_20230810T133246_57079.pdf .
+scp stud54@tcml-master01.uni-tuebingen.de:~/Hockey/models/sac_model_20230810T133246_57079.pkl .
+--------------------------------------
+
