@@ -27,6 +27,6 @@ The definition of the agent itself can be found in agent\_\<algorithm\>.\<pkl/pt
 # Compare agents
 
 Our agents can be used to play against each other with the function compete.py.
-Here is a preview of the gameplay of DDQN against SAC:
+Here is a preview of the gameplay of SAC (left) against DDQN (right):
 
 ![exciting laser hockey gameplay](compete.gif)
