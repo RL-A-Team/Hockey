@@ -8,15 +8,30 @@ from torch.distributions import Normal
 
 class Actor(nn.Module):
     def __init__(self, state_dim, action_dim, n_actions, hidden_dim=[300, 200], epsilon=1e-6):
+        """
+        :param state_dim: (int)
+            dimension of the state space
+        :param action_dim: Box
+            dimension of the action space
+        :param n_actions: int
+            number of actions
+        :param hidden_dim: List[int, int]
+            dimensions of the hidden layers
+        :param epsilon: float
+            input noise
+        """
+
         super(Actor, self).__init__()
 
         self.action_dim = action_dim
         self.n_actions = n_actions
         self.epsilon = epsilon
 
+        # scaling values of the action
         self.action_scale = torch.FloatTensor((action_dim.high[:n_actions] - action_dim.low[:n_actions]) / 2.)
         self.action_bias = torch.FloatTensor((action_dim.high[:n_actions] + action_dim.low[:n_actions]) / 2.)
 
+        # define the NN layers
         self.linear1 = nn.Linear(state_dim[0], hidden_dim[0])
         self.linear2 = nn.Linear(hidden_dim[0], hidden_dim[1])
 
@@ -24,6 +39,12 @@ class Actor(nn.Module):
         self.log_std_linear = nn.Linear(hidden_dim[1], n_actions)
 
     def forward(self, state):
+        """
+        :param state: Tensor
+            State of the environment
+        :return: (Tensor, Tensor)
+            Mu and log_sigma of the learned Gaussian
+        """
         x = F.relu(self.linear1(state))
         x = F.relu(self.linear2(x))
 
@@ -33,10 +54,14 @@ class Actor(nn.Module):
         return mu, log_sigma
 
     def sample(self, state):
+        """
+        :param state: Tensor
+            State of the environment
+        :return: (Tensor, Tensor, Tensor)
+            Sampeled and scaled action, log probability of the action, scaled mu of the Gaussian
+        """
         mu, log_sigma = self.forward(state)
         std = log_sigma.exp()
-
-        assert not (torch.isnan(mu).any() or torch.isnan(std).any())
         normal = Normal(mu, std)
 
         # reparameterization trick
@@ -54,6 +79,15 @@ class Actor(nn.Module):
 
 class Critic(nn.Module):
     def __init__(self, state_dim, n_actions, hidden_dim=[300, 200]):
+        """
+
+        :param state_dim: (int)
+            dimension of the state space
+        :param n_actions: int
+            number of actions
+        :param hidden_dim: List[int, int]
+            dimensions of the hidden layers
+        """
         super(Critic, self).__init__()
         self.linear1 = nn.Linear(state_dim[0] + n_actions, hidden_dim[0])
         self.linear2 = nn.Linear(hidden_dim[0], hidden_dim[1])
@@ -62,6 +96,15 @@ class Critic(nn.Module):
         self.ln2 = nn.LayerNorm(hidden_dim[1])
 
     def forward(self, state, action):
+        """
+
+        :param state: Tensor
+            State of the environment
+        :param action: Tensor
+            Taken action
+        :return: Tensor
+            Estimated soft Q-Values of the state-action pairs
+        """
         x = torch.cat([state, action], 1)
         x = self.ln1(F.relu(self.linear1(x)))
         x = self.ln2(F.relu(self.linear2(x)))
@@ -71,12 +114,22 @@ class Critic(nn.Module):
 
 class ReplayBuffer:
     def __init__(self, max_size=100000):
+        """
+
+        :param max_size: int
+            maximal size of the buffer
+        """
         self.transitions = np.asarray([])
         self.size = 0
         self.current_idx = 0
         self.max_size = max_size
 
     def add_transition(self, transitions_new):
+        """
+
+        :param transitions_new: Tuple
+            Transition to add to the buffer
+        """
         if self.size == 0:
             blank_buffer = [np.asarray(transitions_new, dtype=object)] * self.max_size
             self.transitions = np.asarray(blank_buffer)
@@ -86,6 +139,13 @@ class ReplayBuffer:
         self.current_idx = (self.current_idx + 1) % self.max_size
 
     def sample(self, batch=1):
+        """
+
+        :param batch: int
+            number of transitions to sample
+        :return: np.array
+            sampled transitions
+        """
         if batch > self.size:
             batch = self.size
 
@@ -93,6 +153,11 @@ class ReplayBuffer:
         return self.transitions[self.inds, :]
 
     def get_all_transitions(self):
+        """
+
+        :return: np.array
+            all tranistions stored in the buffer
+        """
         return self.transitions[0:self.size]
 
 
@@ -104,7 +169,7 @@ class PrioritizedReplayBuffer(ReplayBuffer):
         :param alpha: float
             Prioritization of transitions degree
         :param beta: float
-            Importance sampling correction degree
+            Initial importance sampling correction degree
         :param beta_annealing: float
             Factor to anneal beta over time
         """
@@ -116,10 +181,15 @@ class PrioritizedReplayBuffer(ReplayBuffer):
         self.beta_annealing = beta_annealing
 
     def add_transition(self, transitions_new):
+        """
+
+        :param transitions_new: Tuple
+            tranistion to add to the replay buffer
+        """
         if self.size == 0:
             blank_buffer = [np.asarray(transitions_new, dtype=object)] * self.max_size
             self.transitions = np.asarray(blank_buffer)
-            max_prio = 1e-5
+            max_prio = 1e-5  # not 0 to prevent numerical errors
         else:
             max_prio = self.priorities.max()
 
@@ -129,6 +199,13 @@ class PrioritizedReplayBuffer(ReplayBuffer):
         self.current_idx = (self.current_idx + 1) % self.max_size
 
     def sample(self, batch=1):
+        """
+
+        :param batch: int
+            number of transitions to sample
+        :return: (np.array, np.array, np.array
+            sampled transitions, indices of these transitions, weights of these transitions
+        """
         if batch > self.size:
             batch = self.size
 
@@ -146,10 +223,14 @@ class PrioritizedReplayBuffer(ReplayBuffer):
         return self.transitions[self.inds, :], self.inds, weights
 
     def update_priorities(self, indices, new_priorities):
-        self.priorities[indices] = new_priorities
+        """
 
-    def get_all_transitions(self):
-        return self.transitions[0:self.size]
+        :param indices: np.array
+            indices of the transitions whose priorities should be updated
+        :param new_priorities: np.array
+        :return:
+        """
+        self.priorities[indices] = new_priorities
 
 
 # Define the soft actor-critic agent
@@ -176,11 +257,13 @@ class SACAgent():
         :param discount: float
             Discount factor
         :param batch_size: int
+            Number of transitions in update step
         :param autotune: bool
             Autotune the alpha parameter
         :param loss: str
             'l1' loss or 'l2' loss
         :param deterministic_action: bool
+            use deterministic actions (scaled learned mean)
         :param prio_replay_buffer: bool
             Use prioritized replay buffer instead the usual one
         """
@@ -201,6 +284,7 @@ class SACAgent():
         else:
             self.replay_buffer = ReplayBuffer()
 
+        # Init actor and critic, their optimizer and the target networks
         self.actor = Actor(self.state_dim, self.action_dim, self.n_actions, self.hidden_dim)
         self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=self.lr)
 

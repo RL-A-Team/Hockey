@@ -1,3 +1,7 @@
+preprocess_training_data.py
+training_data/
+training_data_preprocessed/
+logs/
 eval/
 models/
 .DS_Store
@@ -7,3 +11,4 @@ SAC/.DS_Store
 SAC/__pycache__/
 __pycache__/
 SAC/opponents/
+indiras_client_v1.5/
