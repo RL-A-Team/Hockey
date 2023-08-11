@@ -14,8 +14,7 @@ from SAC.sac import SACAgent
 # for saving gif :)
 from PIL import Image
 import imageio
-num_frames = 100  # number of captured frames
-step_interval = 1
+step_interval = 2
 output_gif_path = 'compete.gif'
 frames = []
 
@@ -164,4 +163,4 @@ if __name__ == '__main__':
     print(f"Program execution took {execution_time:.4f} seconds.")
 
     # save gif
-    imageio.mimsave(output_gif_path, frames, duration=0.01)
+    imageio.mimsave(output_gif_path, frames, duration=0.025)
