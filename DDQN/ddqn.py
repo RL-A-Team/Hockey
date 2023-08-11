@@ -4,8 +4,6 @@ import torch.optim as optim
 import torch.nn.functional as F
 import numpy as np
 from torch.distributions import Normal
-import random
-import math
 
 # Actor network (-> policy approximation)  ---------- ---------- ----------
 class Actor(nn.Module):
@@ -38,10 +36,6 @@ class Actor(nn.Module):
         # parameterize the action distribution
         mean = self.mean_linear(x)
         log_std = self.log_std_linear(x)
-        
-        # move tensors to GPU
-        mean = mean.to(self.action_scale.device)
-        log_std = log_std.to(self.action_scale.device)
 
         # evaluation -> detach mean and log_std from computation graph
         if not self.training: 
@@ -68,11 +62,7 @@ class Actor(nn.Module):
         x_t = normal.rsample()
         y_t = torch.tanh(x_t)
         action = y_t * self.action_scale + self.action_bias
-        
-        # move tensors to GPU
-        x_t = x_t.to(self.action_scale.device)
-        y_t = y_t.to(self.action_scale.device)
-        
+          
         log_prob = normal.log_prob(x_t)
 
         # calculate log probability
@@ -137,10 +127,6 @@ class DDDQNAgent:
     def __init__(self, state_dim, action_dim, n_actions, hidden_dim, alpha, tau, lr,
                  discount, batch_size, epsilon, max_size):
         
-        # check if GPU is available
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.device = "cpu"
-
         # initialize agent parameters, create networks
         self.state_dim = state_dim
         self.action_dim = action_dim
@@ -157,7 +143,7 @@ class DDDQNAgent:
         # create replay buffer
         self.replay_buffer = ReplayBuffer(max_size=self.max_size)
 
-        # create the 2 Q-value networks and their target networks (-> soft updates)
+        # create the 2 Q-value networks and their target networks
         self.critic_1 = Critic(self.state_dim, self.n_actions, self.hidden_dim)
         self.critic_2 = Critic(self.state_dim, self.n_actions, self.hidden_dim)
         self.critic_target_1 = Critic(self.state_dim, self.n_actions, self.hidden_dim)
@@ -171,13 +157,6 @@ class DDDQNAgent:
         self.actor = Actor(self.state_dim, self.action_dim, self.n_actions, self.hidden_dim, self.epsilon)
         self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=self.lr)
         
-        # move all models to GPU
-        self.critic_1.to(self.device)
-        self.critic_2.to(self.device)
-        self.critic_target_1.to(self.device)
-        self.critic_target_2.to(self.device)
-        self.actor.to(self.device)
-
         # critic loss function (smooth L1 loss)
         self.critic_loss = nn.SmoothL1Loss()
 
@@ -187,6 +166,7 @@ class DDDQNAgent:
         state = torch.FloatTensor(state).unsqueeze(0)
         with torch.no_grad():
             action, _ = self.actor.sample(state)            
+    
         return action
 
     def update(self):
@@ -198,13 +178,6 @@ class DDDQNAgent:
         r = torch.FloatTensor(np.stack(transitions[:, 2])[:, None])
         sp = torch.FloatTensor(np.stack(transitions[:, 3]))
         n = torch.FloatTensor(np.stack(transitions[:, 4])[:, None])
-        
-        # move tensors to GPU
-        s = s.to(self.device)
-        a = a.to(self.device)
-        r = r.to(self.device)
-        sp = sp.to(self.device)
-        n = n.to(self.device)
 
         with torch.no_grad():
             # online actor network -> select next actions
@@ -232,7 +205,7 @@ class DDDQNAgent:
         critic2_loss.backward()
         self.critic_optimizer_2.step()
 
-        # soft updates for target critic networks
+        # updates for target critic networks
         for target_param, param in zip(self.critic_target_1.parameters(), self.critic_1.parameters()):
             target_param.data.copy_(target_param.data * (1.0 - self.tau) + param.data * self.tau)
 

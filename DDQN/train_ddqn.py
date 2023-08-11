@@ -12,12 +12,12 @@ agent_file = 'agent_ddqn.pth'
 #                                                                             #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
                                                                   #
-weak_opponent = False                                              #
+weak_opponent = False                                             #
 #game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_DEFENSE          #
 #game_mode = h_env.HockeyEnv_BasicOpponent.TRAIN_SHOOTING         # 
 game_mode = h_env.HockeyEnv_BasicOpponent.NORMAL                  #
                                                                   #
-episodes = 100                                                   #
+episodes = 10                                                     #
                                                                   #
 load_checkpoint = True                                            #
 save_checkpoint = False                                           #
@@ -115,6 +115,7 @@ if __name__ == '__main__':
                     first_touch = 0
                 
                 # compute a reward --- --- --- --- --- ---
+                
                 #reward = reward
 
                 factor = [1, 10, 100, 1]  # go to puck!    f1
@@ -129,8 +130,9 @@ if __name__ == '__main__':
                 #factor = [0,10,100,0]   # fuck all, just touch the ball f10
                 #factor = [0,100,0,0]    # fuck all, run to the ball     f11
                 
-                reward = factor[0]*winner + factor[1]*closeness_puck + factor[2]*touch_puck + factor[3]*100*puck_direction  # every touch rewarded
-                #reward = factor[0]*winner + factor[1]*closeness_puck + factor[2]*touch_puck*first_touch + factor[3]*100*puck_direction # only first touch rewarded     ft
+                #reward = factor[0]*winner + factor[1]*closeness_puck + factor[2]*touch_puck + factor[3]*100*puck_direction              # every touch rewarded
+                
+                reward = factor[0]*winner + factor[1]*closeness_puck + factor[2]*touch_puck*first_touch + factor[3]*100*puck_direction  # only first touch rewarded
                
 
                 # --- --- --- --- --- --- --- --- --- --- ---
