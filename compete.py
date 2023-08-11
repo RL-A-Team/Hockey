@@ -164,4 +164,4 @@ if __name__ == '__main__':
     print(f"Program execution took {execution_time:.4f} seconds.")
 
     # save gif
-    imageio.mimsave(output_gif_path, frames, duration=0.005)
+    imageio.mimsave(output_gif_path, frames, duration=0.01)
