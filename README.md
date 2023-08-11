@@ -7,7 +7,7 @@ The environment can be found here: [laser-hockey-env](https://github.com/martius
 
 The tournament results can be found here: [RL2023 Hockey Tournament](http://al-hockey.is.tuebingen.mpg.de)
 
-# Algotithms
+# Algorithms
 
 We implemented three different algorithms to solve the task:
 
@@ -17,9 +17,11 @@ We implemented three different algorithms to solve the task:
 
 # Use 
 
-Our trained agents can be found in their respective folders. (agent_<algorithm>.<pke/pth>) 
+Our trained agents can be found in their respective folders. (agent\_\<algorithm\>.\<pke/pth\>) 
 
-These trained agents can be used for playing airhockey by running their respective play_<algotithm>.py-function.
-New agents can be trained with train_<algotithm>.py.
+These trained agents can be used for playing airhockey by running their respective play\_\<algorithm\>.py-function.
+New agents can be trained with train\_\<algorithm\>.py.
 
-The definition of the agent itself can be found in agent_<algorithm>.py.
+The definition of the agent itself can be found in agent\_\<algorithm\>.py.
+
+
