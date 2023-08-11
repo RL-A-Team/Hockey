@@ -24,4 +24,9 @@ New agents can be trained with train\_\<algorithm\>.py.
 
 The definition of the agent itself can be found in agent\_\<algorithm\>.py.
 
+# Compare agents
 
+Our agents can be used to play against each other with the function compete.py.
+Here is a preview of the gameplay of DDQN against SAC:
+
+![exciting laser hockey gameplay](compete.gif)
